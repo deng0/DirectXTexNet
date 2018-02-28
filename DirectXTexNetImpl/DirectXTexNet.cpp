@@ -65,13 +65,13 @@ namespace DirectXTexNet
 	}
 	Size_t TexHelperImpl::BitsPerPixel(DXGI_FORMAT fmt)
 	{
-		return (DirectX::BitsPerPixel(static_cast<::DXGI_FORMAT>(fmt)));
+		return static_cast<Size_t>(DirectX::BitsPerPixel(static_cast<::DXGI_FORMAT>(fmt)));
 	}
 	Size_t TexHelperImpl::BitsPerColor(DXGI_FORMAT fmt)
 	{
-		return (DirectX::BitsPerColor(static_cast<::DXGI_FORMAT>(fmt)));
+		return static_cast<Size_t>(DirectX::BitsPerColor(static_cast<::DXGI_FORMAT>(fmt)));
 	}
-	void TexHelperImpl::ComputePitch(DXGI_FORMAT fmt, Size_t width, Size_t height, Size_t% rowPitch, Size_t% slicePitch, CP_FLAGS flags)
+	void TexHelperImpl::ComputePitch(DXGI_FORMAT fmt, Size_t width, Size_t height, Size_T% rowPitch, Size_T% slicePitch, CP_FLAGS flags)
 	{
 		size_t _rowPitch;
 		size_t _slicePitch;
@@ -79,7 +79,7 @@ namespace DirectXTexNet
 		rowPitch = (_rowPitch);
 		slicePitch = (_slicePitch);
 	}
-	Size_t TexHelperImpl::ComputeScanlines(DXGI_FORMAT fmt, Size_t height)
+	Size_T TexHelperImpl::ComputeScanlines(DXGI_FORMAT fmt, Size_t height)
 	{
 		return (DirectX::ComputeScanlines(static_cast<::DXGI_FORMAT>(fmt), height));
 	}
@@ -87,7 +87,7 @@ namespace DirectXTexNet
 	{
 		DirectX::TexMetadata native;
 		FromManaged(metadata, native);
-		return native.ComputeIndex(mip, item, slice);
+		return static_cast<Size_t>(native.ComputeIndex(mip, item, slice));
 	}
 	DXGI_FORMAT TexHelperImpl::MakeSRGB(DXGI_FORMAT fmt)
 	{
@@ -108,10 +108,10 @@ namespace DirectXTexNet
 
 	//---------------------------------------------------------------------------------
 	// Texture metadata
-	TexMetadata^ TexHelperImpl::GetMetadataFromDDSMemory(IntPtr pSource, Size_t size, DDS_FLAGS flags)
+	TexMetadata^ TexHelperImpl::GetMetadataFromDDSMemory(IntPtr pSource, Size_T size, DDS_FLAGS flags)
 	{
 		DirectX::TexMetadata native;
-		auto hr = DirectX::GetMetadataFromDDSMemory(pSource.ToPointer(), size, static_cast<DWORD>(flags), native);
+		auto hr = DirectX::GetMetadataFromDDSMemory(pSource.ToPointer(), static_cast<size_t>(size), static_cast<DWORD>(flags), native);
 		Marshal::ThrowExceptionForHR(hr);
 		return ToManaged(native);
 	}
@@ -123,10 +123,10 @@ namespace DirectXTexNet
 		Marshal::ThrowExceptionForHR(hr);
 		return ToManaged(native);
 	}
-	TexMetadata^ TexHelperImpl::GetMetadataFromHDRMemory(IntPtr pSource, Size_t size)
+	TexMetadata^ TexHelperImpl::GetMetadataFromHDRMemory(IntPtr pSource, Size_T size)
 	{
 		DirectX::TexMetadata native;
-		auto hr = DirectX::GetMetadataFromHDRMemory(pSource.ToPointer(), size, native);
+		auto hr = DirectX::GetMetadataFromHDRMemory(pSource.ToPointer(), static_cast<size_t>(size), native);
 		Marshal::ThrowExceptionForHR(hr);
 		return ToManaged(native);
 	}
@@ -138,10 +138,10 @@ namespace DirectXTexNet
 		Marshal::ThrowExceptionForHR(hr);
 		return ToManaged(native);
 	}
-	TexMetadata^ TexHelperImpl::GetMetadataFromTGAMemory(IntPtr pSource, Size_t size)
+	TexMetadata^ TexHelperImpl::GetMetadataFromTGAMemory(IntPtr pSource, Size_T size)
 	{
 		DirectX::TexMetadata native;
-		auto hr = DirectX::GetMetadataFromTGAMemory(pSource.ToPointer(), size, native);
+		auto hr = DirectX::GetMetadataFromTGAMemory(pSource.ToPointer(), static_cast<size_t>(size), native);
 		Marshal::ThrowExceptionForHR(hr);
 		return ToManaged(native);
 	}
@@ -153,10 +153,10 @@ namespace DirectXTexNet
 		Marshal::ThrowExceptionForHR(hr);
 		return ToManaged(native);
 	}
-	TexMetadata^ TexHelperImpl::GetMetadataFromWICMemory(IntPtr pSource, Size_t size, WIC_FLAGS flags)
+	TexMetadata^ TexHelperImpl::GetMetadataFromWICMemory(IntPtr pSource, Size_T size, WIC_FLAGS flags)
 	{
 		DirectX::TexMetadata native;
-		auto hr = DirectX::GetMetadataFromWICMemory(pSource.ToPointer(), size, static_cast<DWORD>(flags), native);
+		auto hr = DirectX::GetMetadataFromWICMemory(pSource.ToPointer(), static_cast<size_t>(size), static_cast<DWORD>(flags), native);
 		Marshal::ThrowExceptionForHR(hr);
 		return ToManaged(native);
 	}
@@ -253,13 +253,13 @@ namespace DirectXTexNet
 			throw;
 		}
 	}
-	ScratchImage^ TexHelperImpl::InitializeTemporary(array<Image^>^ images, TexMetadata^ metadata)
+	ScratchImage^ TexHelperImpl::InitializeTemporary(array<Image^>^ images, TexMetadata^ metadata, ... array<IDisposable^>^ takeOwnershipOf)
 	{
 		if (images->LongLength > INT_MAX)
 		{
 			throw gcnew ArgumentOutOfRangeException("To many images in the array");
 		}
-		return gcnew TempScratchImageImpl(images, metadata);
+		return gcnew TempScratchImageImpl(images, metadata, takeOwnershipOf);
 	}
 	ScratchImage^ ScratchImageImpl::CreateImageCopy(Size_t imageIndex, bool allow1D, CP_FLAGS flags)
 	{
@@ -384,12 +384,12 @@ namespace DirectXTexNet
 	// Image I/O
 
 	// DDS operations
-	ScratchImage^ TexHelperImpl::LoadFromDDSMemory(IntPtr pSource, Size_t size, DDS_FLAGS flags)
+	ScratchImage^ TexHelperImpl::LoadFromDDSMemory(IntPtr pSource, Size_T size, DDS_FLAGS flags)
 	{
 		auto image = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::LoadFromDDSMemory(pSource.ToPointer(), size, static_cast<DWORD>(flags), nullptr, *image->scratchImage_);
+			auto hr = DirectX::LoadFromDDSMemory(pSource.ToPointer(), static_cast<size_t>(size), static_cast<DWORD>(flags), nullptr, *image->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 
@@ -472,12 +472,12 @@ namespace DirectXTexNet
 	}
 
 	// HDR operations
-	ScratchImage^ TexHelperImpl::LoadFromHDRMemory(IntPtr pSource, Size_t size)
+	ScratchImage^ TexHelperImpl::LoadFromHDRMemory(IntPtr pSource, Size_T size)
 	{
 		auto image = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::LoadFromHDRMemory(pSource.ToPointer(), size, nullptr, *image->scratchImage_);
+			auto hr = DirectX::LoadFromHDRMemory(pSource.ToPointer(), static_cast<size_t>(size), nullptr, *image->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 
@@ -535,12 +535,12 @@ namespace DirectXTexNet
 	}
 
 	// TGA operations
-	ScratchImage^ TexHelperImpl::LoadFromTGAMemory(IntPtr pSource, Size_t size)
+	ScratchImage^ TexHelperImpl::LoadFromTGAMemory(IntPtr pSource, Size_T size)
 	{
 		auto image = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::LoadFromTGAMemory(pSource.ToPointer(), size, nullptr, *image->scratchImage_);
+			auto hr = DirectX::LoadFromTGAMemory(pSource.ToPointer(), static_cast<size_t>(size), nullptr, *image->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 
@@ -598,12 +598,12 @@ namespace DirectXTexNet
 	}
 
 	// WIC operations
-	ScratchImage^ TexHelperImpl::LoadFromWICMemory(IntPtr pSource, Size_t size, WIC_FLAGS flags)
+	ScratchImage^ TexHelperImpl::LoadFromWICMemory(IntPtr pSource, Size_T size, WIC_FLAGS flags)
 	{
 		auto image = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::LoadFromWICMemory(pSource.ToPointer(), size, static_cast<DWORD>(flags), nullptr, *image->scratchImage_);
+			auto hr = DirectX::LoadFromWICMemory(pSource.ToPointer(), static_cast<size_t>(size), static_cast<DWORD>(flags), nullptr, *image->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 

@@ -7,6 +7,10 @@ using System.Runtime.InteropServices;
 using DirectXTexNet.Test.Util;
 using NUnit.Framework;
 
+// these two alias should match setting in DirectXTexNet.cs
+using Size_t = System.Int32;
+using Size_T = System.Int64;
+
 namespace DirectXTexNet.Test
 {
     public class Tests
@@ -23,18 +27,18 @@ namespace DirectXTexNet.Test
             }
         }
 
-        private ScratchImage createTempFromMips(ScratchImage orig, out WeakReference weak)
+        private ScratchImage createTempFromMips(ScratchImage orig, out WeakReference weak, bool takeOwnership)
         {
             var mips = orig.GenerateMipMaps(TEX_FILTER_FLAGS.FANT, 0);
             weak = new WeakReference(mips);
-            uint count =(uint) mips.GetImageCount();
+            Size_t count = mips.GetImageCount();
             Image[] arr = new Image[count];
-            for (uint i = 0; i < count; i++)
+            for (Size_t i = 0; i < count; i++)
             {
                 arr[i] = mips.GetImage(i);
             }
 
-            return TexHelper.Instance.InitializeTemporary(arr, mips.GetMetadata());
+            return TexHelper.Instance.InitializeTemporary(arr, mips.GetMetadata(), takeOwnership ? new IDisposable[] { mips } : null);
         }
 
         [Test]
@@ -47,24 +51,54 @@ namespace DirectXTexNet.Test
                 // create Mips within other method call and wrap its image with TempScratchImages
                 WeakReference weakRef1;
                 WeakReference weakRef2;
-                ScratchImage temp1 = this.createTempFromMips(image, out weakRef1);
-                ScratchImage temp2 = this.createTempFromMips(image, out weakRef2);
+                ScratchImage temp1 = this.createTempFromMips(image, out weakRef1, false);
+                ScratchImage temp2 = this.createTempFromMips(image, out weakRef2, true);
 
-                // tests if the TempScratchImages prevents the mips from being finalized
+                // check if the mips have not been finalized
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 Assert.True(weakRef1.IsAlive);
                 Assert.True(weakRef2.IsAlive);
 
-                // now one TempScratchImage is disposed and its underlying mips should be finalized
+                // dispose temp2 (has ownerships of it's mips)
+                temp2.Dispose();
+
+                // because ownership was transferred, it's mips should be disposed
+                checkIsDisposedWhenAlive(weakRef2, true);
+
+                // check if temp1 still prevents it's mips from being finalized
+                // the mips of temp2 will be collected by the garbage collector
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                Assert.True(weakRef1.IsAlive);
+                Assert.False(weakRef2.IsAlive);
+
+                // now temp1 is disposed
                 temp1.Dispose();
+
+                // because ownership was not transferred, it's mips should not be disposed yet, if the GC has not run
+                checkIsDisposedWhenAlive(weakRef1, false);
+
+                // but calling GC, should dispose the mips at last
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 Assert.False(weakRef1.IsAlive);
-                Assert.True(weakRef2.IsAlive);
+                Assert.False(weakRef2.IsAlive);
+            }
+        }
 
-                // dispose the other (but GC would finalize it anyway)
-                temp2.Dispose();
+        private static void checkIsDisposedWhenAlive(WeakReference weakRef2, bool expected)
+        {
+            ScratchImage mips = weakRef2.Target as ScratchImage;
+
+            if (mips != null)
+            {
+                // although unlikely but the GC might have already collected it
+                Assert.AreEqual(expected, mips.IsDisposed);
+            }
+            else
+            {
+                Console.WriteLine("Mips was already collected by GC");
             }
         }
 
@@ -87,7 +121,7 @@ namespace DirectXTexNet.Test
 
                         using (ScratchImage fromMem = TexHelper.Instance.LoadFromWICMemory(
                             new IntPtr(memStream.PositionPointer),
-                            (uint)memStream.Length,
+                            (Size_T)memStream.Length,
                             WIC_FLAGS.FORCE_RGB)) // it seems DirectXTex writes image in different format
                         {
                             //fromMem.SaveToWICFile(0, WIC_FLAGS.NONE, guid, Path.Combine(this.GetOutputFolder(), "copy2.png"));
@@ -125,17 +159,17 @@ namespace DirectXTexNet.Test
                 this.Sums = new double[channelCount];
             }
 
-            public unsafe void EvaluatePixels(IntPtr pixels, UIntPtr width, UIntPtr y)
+            public unsafe void EvaluatePixels(IntPtr pixels, IntPtr width, IntPtr y)
             {
                 float* ptr = (float*)pixels.ToPointer();
 
-                ulong u = 0;
-                ulong widthV = width.ToUInt64();
+                long u = 0;
+                int widthV = width.ToInt32();
 
                 //float[] data = new float[widthV * (ulong)this.sums.Length];
                 //Marshal.Copy(pixels, data, 0, data.Length);
 
-                for (ulong i = 0; i < widthV; i++)
+                for (int i = 0; i < widthV; i++)
                 {
                     for (int j = 0; j < this.Sums.Length; j++)
                     {
@@ -181,18 +215,18 @@ namespace DirectXTexNet.Test
                 this.ChannelCount = channelCount;
             }
 
-            public unsafe void TransformPixels(IntPtr outPixels, IntPtr inPixels, UIntPtr width, UIntPtr y)
+            public unsafe void TransformPixels(IntPtr outPixels, IntPtr inPixels, IntPtr width, IntPtr y)
             {
                 float* outPtr = (float*)outPixels.ToPointer();
                 float* inPtr = (float*)inPixels.ToPointer();
 
-                ulong u = 0;
-                ulong widthV = width.ToUInt64();
+                long u = 0;
+                int widthV = width.ToInt32();
 
                 //float[] data = new float[widthV * (ulong)this.channelCount];
                 //Marshal.Copy(inPixels, data, 0, data.Length);
 
-                for (ulong i = 0; i < widthV; i++)
+                for (int i = 0; i < widthV; i++)
                 {
                     for (int j = 0; j < this.ChannelCount - 1; j++)
                     {
@@ -337,15 +371,15 @@ namespace DirectXTexNet.Test
 
         private void AssertEqual(TexMetadata metaData, Bitmap expected)
         {
-            Assert.AreEqual((ulong)expected.Width, metaData.Width);
-            Assert.AreEqual((ulong)expected.Height, metaData.Height);
+            Assert.AreEqual(expected.Width, metaData.Width);
+            Assert.AreEqual(expected.Height, metaData.Height);
             Assert.AreEqual(1UL, metaData.Depth);
             Assert.AreEqual(TEX_DIMENSION.TEXTURE2D, metaData.Dimension);
             Assert.AreEqual(1UL, metaData.ArraySize);
             Assert.AreEqual(1UL, metaData.MipLevels);
 
             // DXGI_FORMAT_R8G8B8A8_UNORM or DXGI_FORMAT_R8G8B8A8_UNORM_SRGB
-            Assert.That((uint)metaData.Format, Is.EqualTo(28).Or.EqualTo(29));
+            Assert.That((uint)metaData.Format, Is.EqualTo(28u).Or.EqualTo(29u));
         }
 
         private void AssertEqual(ScratchImage image, Bitmap expected)

@@ -2,9 +2,10 @@
 using System.IO;
 using System.Reflection;
 
-// could be changed to UInt32 if you only want to handle smaller images/only use 32 bit processes
-// third option is to uncomment and use the Size_t struct
-using Size_t = System.UInt64;
+// The unmanaged size_t is UInt32 in 32bit processes and UInt64 in 64bit processes
+// For simplicity and CLS compliancy we generally use Int32, but where it matters Int64
+using Size_t = System.Int32;
+using Size_T = System.Int64;
 
 // just some aliases for better readability 
 using IWICImagingFactoryPtr = System.IntPtr;
@@ -17,7 +18,7 @@ using XMVectorPtr = System.IntPtr;
 namespace DirectXTexNet
 {
     #region enums
-    public enum DXGI_FORMAT : uint
+    public enum DXGI_FORMAT
     {
         UNKNOWN = 0,
         R32G32B32A32_TYPELESS = 1,
@@ -125,7 +126,7 @@ namespace DirectXTexNet
         NV12 = 103,
         P010 = 104,
         P016 = 105,
-        _420_OPAQUE = 106,
+        OPAQUE_420 = 106,
         YUY2 = 107,
         Y210 = 108,
         Y216 = 109,
@@ -135,10 +136,10 @@ namespace DirectXTexNet
         P8 = 113,
         A8P8 = 114,
         B4G4R4A4_UNORM = 115,
-        FORCE_UINT = 0xffffffff
+        //FORCE_UINT = 0xffffffff
     }
 
-    public enum D3D11_USAGE : uint
+    public enum D3D11_USAGE
     {
         DEFAULT = 0,
         IMMUTABLE = 1,
@@ -147,7 +148,7 @@ namespace DirectXTexNet
     }
 
     [Flags]
-    public enum D3D11_BIND_FLAG : uint
+    public enum D3D11_BIND_FLAG
     {
         VERTEX_BUFFER = 0x1,
         INDEX_BUFFER = 0x2,
@@ -162,14 +163,14 @@ namespace DirectXTexNet
     }
 
     [Flags]
-    public enum D3D11_CPU_ACCESS_FLAG : uint
+    public enum D3D11_CPU_ACCESS_FLAG
     {
         WRITE = 0x10000,
         READ = 0x20000
     }
 
     [Flags]
-    public enum D3D11_RESOURCE_MISC_FLAG : uint
+    public enum D3D11_RESOURCE_MISC_FLAG
     {
         GENERATE_MIPS = 0x1,
         SHARED = 0x2,
@@ -190,7 +191,7 @@ namespace DirectXTexNet
     }
 
     [Flags]
-    public enum CP_FLAGS : uint
+    public enum CP_FLAGS
     {
         /// <summary>
         /// Normal operation
@@ -223,18 +224,18 @@ namespace DirectXTexNet
         /// <summary>
         /// Override with a legacy 24 bits-per-pixel format size
         /// </summary>
-        _24BPP = 0x10000,
+        BPP24 = 0x10000,
         /// <summary>
         /// Override with a legacy 16 bits-per-pixel format size
         /// </summary>
-        _16BPP = 0x20000,
+        BPP16 = 0x20000,
         /// <summary>
         /// Override with a legacy 8 bits-per-pixel format size
         /// </summary>
-        _8BPP = 0x40000,
+        BPP8 = 0x40000,
     }
 
-    public enum TEX_DIMENSION : uint
+    public enum TEX_DIMENSION
     {
         TEXTURE1D = 2,
         TEXTURE2D = 3,
@@ -245,13 +246,13 @@ namespace DirectXTexNet
     /// Subset here matches D3D10_RESOURCE_MISC_FLAG and D3D11_RESOURCE_MISC_FLAG
     /// </summary>
     [Flags]
-    public enum TEX_MISC_FLAG : uint
+    public enum TEX_MISC_FLAG
     {
         TEXTURECUBE = 0x4,
     }
 
     [Flags]
-    public enum TEX_MISC_FLAG2 : uint
+    public enum TEX_MISC_FLAG2
     {
         ALPHA_MODE_MASK = 0x7,
     }
@@ -259,7 +260,7 @@ namespace DirectXTexNet
     /// <summary>
     /// Matches DDS_ALPHA_MODE, encoded in MISC_FLAGS2
     /// </summary>
-    public enum TEX_ALPHA_MODE : uint
+    public enum TEX_ALPHA_MODE
     {
         UNKNOWN = 0,
         STRAIGHT = 1,
@@ -269,7 +270,7 @@ namespace DirectXTexNet
     }
 
     [Flags]
-    public enum DDS_FLAGS : uint
+    public enum DDS_FLAGS
     {
         NONE = 0x0,
 
@@ -320,7 +321,7 @@ namespace DirectXTexNet
     }
 
     [Flags]
-    public enum WIC_FLAGS : uint
+    public enum WIC_FLAGS
     {
         NONE = 0x0,
 
@@ -384,7 +385,7 @@ namespace DirectXTexNet
     }
 
     [Flags]
-    public enum TEX_FR_FLAGS : uint
+    public enum TEX_FR_FLAGS
     {
         ROTATE0 = 0x0,
         ROTATE90 = 0x1,
@@ -512,7 +513,7 @@ namespace DirectXTexNet
     }
 
     [Flags]
-    public enum TEX_PMALPHA_FLAGS : uint
+    public enum TEX_PMALPHA_FLAGS
     {
         DEFAULT = 0,
 
@@ -536,7 +537,7 @@ namespace DirectXTexNet
     }
 
     [Flags]
-    public enum TEX_COMPRESS_FLAGS : uint
+    public enum TEX_COMPRESS_FLAGS
     {
         DEFAULT = 0,
 
@@ -585,7 +586,7 @@ namespace DirectXTexNet
     }
 
     [Flags]
-    public enum CNMAP_FLAGS : uint
+    public enum CNMAP_FLAGS
     {
         DEFAULT = 0,
         /// <summary>
@@ -709,7 +710,7 @@ namespace DirectXTexNet
     /// <param name="pixels">The pixels. This a row of Pixels with each pixel normally represented as RBGA in 4x32bit float (0.0-1.0).</param>
     /// <param name="width">The width.</param>
     /// <param name="y">The y/row index.</param>
-    public delegate void EvaluatePixelsDelegate(XMVectorPtr pixels, UIntPtr width, UIntPtr y);
+    public delegate void EvaluatePixelsDelegate(XMVectorPtr pixels, IntPtr width, IntPtr y);
 
     /// <summary>
     /// The delegate used for the EvaluateImage method.
@@ -721,139 +722,10 @@ namespace DirectXTexNet
     /// <param name="inPixels">The input pixels. This a row of Pixels with each pixel normally represented as RBGA in 4x32bit float (0.0-1.0).</param>
     /// <param name="width">The width.</param>
     /// <param name="y">The y/row index.</param>
-    public delegate void TransformPixelsDelegate(XMVectorPtr outPixels, XMVectorPtr inPixels, UIntPtr width, UIntPtr y);
+    public delegate void TransformPixelsDelegate(XMVectorPtr outPixels, XMVectorPtr inPixels, IntPtr width, IntPtr y);
     #endregion
 
     #region structs
-    /*
-    // The Size_t struct was an idea to handle the different sizes of the unmanaged size_t depending on the process bitness.
-    /// <summary>
-    /// This struct represents a 32 or 64 bit unsigned int depending on the process bitness.
-    /// </summary>
-    public struct Size_t : IComparable, IFormattable, IComparable<Size_t>, IEquatable<Size_t>
-    {
-        private readonly UIntPtr val;
-
-        public ulong Value => this.val.ToUInt64();
-
-        public Size_t(ulong value)
-        {
-            this.val = new UIntPtr(value);
-        }
-
-        public Size_t(long value)
-        {
-            this.val = new UIntPtr((ulong)value);
-        }
-
-        public Size_t(uint value)
-        {
-            this.val = new UIntPtr(value);
-        }
-
-        public Size_t(int value)
-        {
-            this.val = new UIntPtr((uint)value);
-        }
-
-        public static implicit operator Size_t(ulong value)
-        {
-            return new Size_t(value);
-        }
-
-        public static implicit operator ulong(Size_t value)
-        {
-            return value.Value;
-        }
-
-        public static implicit operator Size_t(long value)
-        {
-            return new Size_t(value);
-        }
-
-        public static implicit operator long(Size_t value)
-        {
-            return (long)value.Value;
-        }
-
-        public static implicit operator Size_t(uint value)
-        {
-            return new Size_t(value);
-        }
-
-        public static implicit operator uint(Size_t value)
-        {
-            return value.val.ToUInt32();
-        }
-
-        public static implicit operator Size_t(int value)
-        {
-            return new Size_t(value);
-        }
-
-        public static implicit operator int(Size_t value)
-        {
-            return (int)value.val.ToUInt32();
-        }
-
-        public override string ToString()
-        {
-            return this.Value.ToString();
-        }
-
-        public string ToString(string format, IFormatProvider formatProvider)
-        {
-            return this.Value.ToString(format, formatProvider);
-        }
-
-        public int CompareTo(object obj)
-        {
-            if (obj is Size_t)
-            {
-                return this.CompareTo((Size_t)obj);
-            }
-
-            ulong otherVal = Convert.ToUInt64(obj);
-            return this.Value.CompareTo(otherVal);
-        }
-
-        public int CompareTo(Size_t other)
-        {
-            return this.Value.CompareTo(other.Value);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj is Size_t)
-            {
-                return this.val == ((Size_t)obj).val;
-            }
-            return false;
-        }
-
-        /// <inheritdoc />
-        public override int GetHashCode()
-        {
-            return this.val.GetHashCode();
-        }
-
-        public bool Equals(Size_t other)
-        {
-            return this.Value == other.Value;
-        }
-
-        public static bool operator ==(Size_t a, Size_t b)
-        {
-            return a.val == b.val;
-        }
-
-        public static bool operator !=(Size_t a, Size_t b)
-        {
-            return a.val != b.val;
-        }
-    }
-    */
-
     public struct MseV
     {
         public float V0, V1, V2, V3;
@@ -867,21 +739,21 @@ namespace DirectXTexNet
     /// </summary>
     public sealed class Image
     {
-        public UInt64 Width { get; }
+        public Size_t Width { get; }
 
-        public UInt64 Height { get; }
+        public Size_t Height { get; }
 
         public DXGI_FORMAT Format { get; }
 
-        public UInt64 RowPitch { get; }
+        public Size_T RowPitch { get; }
 
-        public UInt64 SlicePitch { get; }
+        public Size_T SlicePitch { get; }
 
         public IntPtr Pixels { get; }
 
         public object Parent { get; }
 
-        public Image(UInt64 width, UInt64 height, DXGI_FORMAT format, UInt64 rowPitch, UInt64 slicePitch, IntPtr pixels, object parent)
+        public Image(Size_t width, Size_t height, DXGI_FORMAT format, Size_T rowPitch, Size_T slicePitch, IntPtr pixels, object parent)
         {
             this.Width = width;
             this.Height = height;
@@ -898,31 +770,31 @@ namespace DirectXTexNet
     /// </summary>
     public sealed class TexMetadata
     {
-        public UInt64 Width;
+        public Size_t Width;
         /// <summary>
         /// The height. Should be 1 for 1D textures.
         /// </summary>
-        public UInt64 Height;
+        public Size_t Height;
         /// <summary>
         /// The depth. Should be 1 for 1D or 2D textures.
         /// </summary>
-        public UInt64 Depth;
+        public Size_t Depth;
         /// <summary>
         /// The array size. For cubemap, this is a multiple of 6.
         /// </summary>
-        public UInt64 ArraySize;
-        public UInt64 MipLevels;
+        public Size_t ArraySize;
+        public Size_t MipLevels;
         public TEX_MISC_FLAG MiscFlags;
         public TEX_MISC_FLAG2 MiscFlags2;
         public DXGI_FORMAT Format;
         public TEX_DIMENSION Dimension;
 
         public TexMetadata(
-            UInt64 width,
-            UInt64 height,
-            UInt64 depth,
-            UInt64 arraySize,
-            UInt64 mipLevels,
+            Size_t width,
+            Size_t height,
+            Size_t depth,
+            Size_t arraySize,
+            Size_t mipLevels,
             TEX_MISC_FLAG miscFlags,
             TEX_MISC_FLAG2 miscFlags2,
             DXGI_FORMAT format,
@@ -969,6 +841,8 @@ namespace DirectXTexNet
     {
         //internal ScratchImage() { }
 
+        public abstract bool IsDisposed { get; }
+
         public abstract Size_t GetImageCount();
 
         /// <summary>
@@ -1001,7 +875,7 @@ namespace DirectXTexNet
         /// <summary>
         /// This only returns a value if this image owns the pixel data.
         /// </summary>
-        public abstract Size_t GetPixelsSize();
+        public abstract Size_T GetPixelsSize();
 
         /// <summary>
         /// Determines whether all pixels are opaque. This method is not supported by temporary scratch images.
@@ -1255,7 +1129,7 @@ namespace DirectXTexNet
             Instance = (TexHelper)Activator.CreateInstance(assembly.GetType("DirectXTexNet.TexHelperImpl"));
         }
 
-        public readonly Size_t IndexOutOfRange = Environment.Is64BitProcess ? unchecked((Size_t)ulong.MaxValue) : (Size_t)uint.MaxValue;
+        public readonly Size_t IndexOutOfRange = unchecked((Size_t)(Environment.Is64BitProcess ? UInt64.MaxValue : UInt32.MaxValue));
 
         //internal DirectXTexNet() { }
 
@@ -1290,11 +1164,11 @@ namespace DirectXTexNet
             DXGI_FORMAT fmt,
             Size_t width,
             Size_t height,
-            out Size_t rowPitch,
-            out Size_t slicePitch,
+            out Size_T rowPitch,
+            out Size_T slicePitch,
             CP_FLAGS flags);
 
-        public abstract Size_t ComputeScanlines(DXGI_FORMAT fmt, Size_t height);
+        public abstract Size_T ComputeScanlines(DXGI_FORMAT fmt, Size_t height);
 
         /// <summary>
         /// Computes the image index for the specified values. If the image index is out of range <see cref="TexHelper.IndexOutOfRange" /> is returned.
@@ -1319,19 +1193,19 @@ namespace DirectXTexNet
         #endregion
 
         #region Texture metadata
-        public abstract TexMetadata GetMetadataFromDDSMemory(IntPtr pSource, Size_t size, DDS_FLAGS flags);
+        public abstract TexMetadata GetMetadataFromDDSMemory(IntPtr pSource, Size_T size, DDS_FLAGS flags);
 
         public abstract TexMetadata GetMetadataFromDDSFile(String szFile, DDS_FLAGS flags);
 
-        public abstract TexMetadata GetMetadataFromHDRMemory(IntPtr pSource, Size_t size);
+        public abstract TexMetadata GetMetadataFromHDRMemory(IntPtr pSource, Size_T size);
 
         public abstract TexMetadata GetMetadataFromHDRFile(String szFile);
 
-        public abstract TexMetadata GetMetadataFromTGAMemory(IntPtr pSource, Size_t size);
+        public abstract TexMetadata GetMetadataFromTGAMemory(IntPtr pSource, Size_T size);
 
         public abstract TexMetadata GetMetadataFromTGAFile(String szFile);
 
-        public abstract TexMetadata GetMetadataFromWICMemory(IntPtr pSource, Size_t size, WIC_FLAGS flags);
+        public abstract TexMetadata GetMetadataFromWICMemory(IntPtr pSource, Size_T size, WIC_FLAGS flags);
 
         public abstract TexMetadata GetMetadataFromWICFile(String szFile, WIC_FLAGS flags);
         #endregion
@@ -1360,32 +1234,33 @@ namespace DirectXTexNet
             CP_FLAGS flags);
 
         /// <summary>
-        /// Creates a temporary image collection. This does not copy the data. Be sure to not dispose the original images that were combined in this
-        /// collections.
+        /// Creates a temporary image collection (Not part of the original DirectXTex). This does not copy the data. Be sure to not dispose the original ScratchImages that were combined in this
+        /// collection. Alternatively the ownership of the original ScratchImage(s) can be passed to this instance.
         /// </summary>
         /// <param name="images">The images.</param>
         /// <param name="metadata">The metadata.</param>
-        public abstract ScratchImage InitializeTemporary(Image[] images, TexMetadata metadata);
+        /// <param name="takeOwnershipOf">Optional objects this instance should take ownership of.</param>
+        public abstract ScratchImage InitializeTemporary(Image[] images, TexMetadata metadata, params IDisposable[] takeOwnershipOf);
         #endregion
 
         #region Image I/O
         // DDS operations
-        public abstract ScratchImage LoadFromDDSMemory(IntPtr pSource, Size_t size, DDS_FLAGS flags);
+        public abstract ScratchImage LoadFromDDSMemory(IntPtr pSource, Size_T size, DDS_FLAGS flags);
 
         public abstract ScratchImage LoadFromDDSFile(String szFile, DDS_FLAGS flags);
 
         // HDR operations
-        public abstract ScratchImage LoadFromHDRMemory(IntPtr pSource, Size_t size);
+        public abstract ScratchImage LoadFromHDRMemory(IntPtr pSource, Size_T size);
 
         public abstract ScratchImage LoadFromHDRFile(String szFile);
 
         // TGA operations
-        public abstract ScratchImage LoadFromTGAMemory(IntPtr pSource, Size_t size);
+        public abstract ScratchImage LoadFromTGAMemory(IntPtr pSource, Size_T size);
 
         public abstract ScratchImage LoadFromTGAFile(String szFile);
 
         // WIC operations
-        public abstract ScratchImage LoadFromWICMemory(IntPtr pSource, Size_t size, WIC_FLAGS flags);
+        public abstract ScratchImage LoadFromWICMemory(IntPtr pSource, Size_T size, WIC_FLAGS flags);
 
         public abstract ScratchImage LoadFromWICFile(String szFile, WIC_FLAGS flags);
         #endregion

@@ -8,9 +8,9 @@ using namespace System;
 using namespace System::IO;
 using namespace System::Runtime::InteropServices;
 
-// could be changed to UInt32 if you only want to handle smaller images/only use 32 bit processes
-// third option is to uncomment and use the Size_t struct
-using Size_t = UInt64;
+// these two alias should match setting in DirectXTexNet.cs
+using Size_t = Int32;
+using Size_T = Int64;
 
 // just some aliases for better readability
 using IWICImagingFactoryPtr = IntPtr;
@@ -24,8 +24,8 @@ namespace DirectXTexNet
 	static Image^ ToManaged(_In_ const DirectX::Image& native, Object^ parent)
 	{
 		return gcnew Image(
-			native.width,
-			native.height,
+			static_cast<Size_t>(native.width),
+			static_cast<Size_t>(native.height),
 			static_cast<DXGI_FORMAT>(native.format),
 			native.rowPitch,
 			native.slicePitch,
@@ -46,11 +46,11 @@ namespace DirectXTexNet
 	static TexMetadata^ ToManaged(_In_ const DirectX::TexMetadata& native)
 	{
 		return gcnew TexMetadata(
-			native.width,
-			native.height,
-			native.depth,
-			native.arraySize,
-			native.mipLevels,
+			static_cast<Size_t>(native.width),
+			static_cast<Size_t>(native.height),
+			static_cast<Size_t>(native.depth),
+			static_cast<Size_t>(native.arraySize),
+			static_cast<Size_t>(native.mipLevels),
 			static_cast<TEX_MISC_FLAG>(native.miscFlags),
 			static_cast<TEX_MISC_FLAG2>(native.miscFlags2),
 			static_cast<DXGI_FORMAT>(native.format),
@@ -125,12 +125,12 @@ namespace DirectXTexNet
 	public:
 		Size_t GetImageCount() sealed override
 		{
-			return GetImageCountInternal();
+			return static_cast<Size_t>(GetImageCountInternal());
 		}
 
 		Size_t ComputeImageIndex(Size_t mip, Size_t item, Size_t slice) sealed override
 		{
-			return this->GetMetadataInternal().ComputeIndex(mip, item, slice);
+			return static_cast<Size_t>(this->GetMetadataInternal().ComputeIndex(mip, item, slice));
 		}
 
 		Image^ GetImage(Size_t index) sealed override
@@ -294,6 +294,14 @@ namespace DirectXTexNet
 	ref class TempScratchImageImpl : ScratchImageImpl
 	{
 	public:
+		property bool IsDisposed
+		{
+			bool get() override
+			{
+				return m_image == nullptr;
+			}
+		}
+
 		bool OverrideFormat(DXGI_FORMAT newFormat) override
 		{
 			auto f = static_cast<::DXGI_FORMAT>(newFormat);
@@ -324,9 +332,9 @@ namespace DirectXTexNet
 			return IntPtr();
 		}
 
-		Size_t GetPixelsSize() override
+		Size_T GetPixelsSize() override
 		{
-			return size_t(-1);
+			return Size_T(-1);
 		}
 
 		bool IsAlphaAllOpaque() override
@@ -336,12 +344,21 @@ namespace DirectXTexNet
 
 		~TempScratchImageImpl()
 		{
+			if (otherDisposables != nullptr)
+			{
+				for (int i = 0; i < otherDisposables->Length; i++)
+				{
+					delete otherDisposables[i];
+				}
+				otherDisposables = nullptr;
+			}
 			this->!TempScratchImageImpl();
 		}
 
 	protected:
 		!TempScratchImageImpl()
 		{
+			otherDisposables = nullptr;
 			origImages = nullptr;
 			m_nimages = 0;
 			if (this->m_metadata != nullptr)
@@ -372,7 +389,7 @@ namespace DirectXTexNet
 			return *m_metadata;
 		}
 
-		TempScratchImageImpl(array<Image^>^ _images, TexMetadata^ _metadata)
+		TempScratchImageImpl(array<Image^>^ _images, TexMetadata^ _metadata, array<IDisposable^>^ takeOwnershipOf)
 		{
 			m_metadata = new DirectX::TexMetadata;
 			FromManaged(_metadata, *m_metadata);
@@ -389,10 +406,21 @@ namespace DirectXTexNet
 				origImages[i] = origImage;
 				FromManaged(origImage, m_image[i]);
 			}
+
+			if (takeOwnershipOf != nullptr)
+			{
+				otherDisposables = gcnew array<IDisposable^>(takeOwnershipOf->Length);
+				for (int i = 0; i < otherDisposables->Length; i++)
+				{
+					otherDisposables[i] = takeOwnershipOf[i];
+				}
+			}
 		}
 
 	private:
 		array<Image^>^		  origImages;
+		array<IDisposable^>^  otherDisposables;
+
 		size_t                m_nimages;
 		DirectX::TexMetadata* m_metadata;
 		DirectX::Image*       m_image;
@@ -401,6 +429,14 @@ namespace DirectXTexNet
 	ref class ActualScratchImageImpl : ScratchImageImpl
 	{
 	public:
+		property bool IsDisposed 
+		{
+			bool get() override
+			{
+				return scratchImage_ == nullptr;
+			}
+		}
+
 		bool OverrideFormat(DXGI_FORMAT f) override
 		{
 			return scratchImage_->OverrideFormat(static_cast<::DXGI_FORMAT>(f));
@@ -416,7 +452,7 @@ namespace DirectXTexNet
 			return IntPtr(scratchImage_->GetPixels());
 		}
 
-		Size_t GetPixelsSize() override
+		Size_T GetPixelsSize() override
 		{
 			return scratchImage_->GetPixelsSize();
 		}
@@ -499,9 +535,9 @@ namespace DirectXTexNet
 		Size_t BitsPerColor(DXGI_FORMAT fmt) override;
 
 		void ComputePitch(DXGI_FORMAT fmt, Size_t width, Size_t height,
-			[Out] Size_t% rowPitch, [Out] Size_t% slicePitch, CP_FLAGS flags) override;
+			[Out] Size_T% rowPitch, [Out] Size_T% slicePitch, CP_FLAGS flags) override;
 
-		Size_t ComputeScanlines(DXGI_FORMAT fmt, Size_t height) override;
+		Size_T ComputeScanlines(DXGI_FORMAT fmt, Size_t height) override;
 
 		Size_t ComputeImageIndex(TexMetadata^ metadata, Size_t mip, Size_t item, Size_t slice) override;
 
@@ -515,19 +551,19 @@ namespace DirectXTexNet
 
 
 		// Get Texture metadata
-		TexMetadata^ GetMetadataFromDDSMemory(IntPtr pSource, Size_t size, DDS_FLAGS flags) override;
+		TexMetadata^ GetMetadataFromDDSMemory(IntPtr pSource, Size_T size, DDS_FLAGS flags) override;
 
 		TexMetadata^ GetMetadataFromDDSFile(String^ szFile, DDS_FLAGS flags) override;
 
-		TexMetadata^ GetMetadataFromHDRMemory(IntPtr pSource, Size_t size) override;
+		TexMetadata^ GetMetadataFromHDRMemory(IntPtr pSource, Size_T size) override;
 
 		TexMetadata^ GetMetadataFromHDRFile(String^ szFile) override;
 
-		TexMetadata^ GetMetadataFromTGAMemory(IntPtr pSource, Size_t size) override;
+		TexMetadata^ GetMetadataFromTGAMemory(IntPtr pSource, Size_T size) override;
 
 		TexMetadata^ GetMetadataFromTGAFile(String^ szFile) override;
 
-		TexMetadata^ GetMetadataFromWICMemory(IntPtr pSource, Size_t size, WIC_FLAGS flags) override;
+		TexMetadata^ GetMetadataFromWICMemory(IntPtr pSource, Size_T size, WIC_FLAGS flags) override;
 
 		TexMetadata^ GetMetadataFromWICFile(String^ szFile, WIC_FLAGS flags) override;
 
@@ -543,23 +579,23 @@ namespace DirectXTexNet
 
 		ScratchImage^ InitializeCube(DXGI_FORMAT fmt, Size_t width, Size_t height, Size_t nCubes, Size_t mipLevels, CP_FLAGS flags) override;
 
-		ScratchImage^ InitializeTemporary(array<Image^>^ images, TexMetadata^ metadata) override;
+		ScratchImage^ InitializeTemporary(array<Image^>^ images, TexMetadata^ metadata, ... array<IDisposable^>^ takeOwnershipOf) override;
 
 
 		// Load Images
-		ScratchImage^ LoadFromDDSMemory(IntPtr pSource, Size_t size, DDS_FLAGS flags) override;
+		ScratchImage^ LoadFromDDSMemory(IntPtr pSource, Size_T size, DDS_FLAGS flags) override;
 
 		ScratchImage^ LoadFromDDSFile(String^ szFile, DDS_FLAGS flags) override;
 
-		ScratchImage^ LoadFromHDRMemory(IntPtr pSource, Size_t size) override;
+		ScratchImage^ LoadFromHDRMemory(IntPtr pSource, Size_T size) override;
 
 		ScratchImage^ LoadFromHDRFile(String^ szFile) override;
 
-		ScratchImage^ LoadFromTGAMemory(IntPtr pSource, Size_t size) override;
+		ScratchImage^ LoadFromTGAMemory(IntPtr pSource, Size_T size) override;
 
 		ScratchImage^ LoadFromTGAFile(String^ filename) override;
 
-		ScratchImage^ LoadFromWICMemory(IntPtr pSource, Size_t size, WIC_FLAGS flags) override;
+		ScratchImage^ LoadFromWICMemory(IntPtr pSource, Size_T size, WIC_FLAGS flags) override;
 
 		ScratchImage^ LoadFromWICFile(String^ filename, WIC_FLAGS flags) override;
 

@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -32,7 +33,9 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.1")]
-[assembly: AssemblyInformationalVersion("1.0.0-rc1")]
+[assembly: AssemblyVersion("1.0.0.2")]
+[assembly: AssemblyInformationalVersion("1.0.0-rc2")]
+
+[assembly: CLSCompliant(true)]
 
 //[assembly: InternalsVisibleTo("DirectXTexNetImpl, PublicKey=0024000004800000940000000602000000240000525341310004000001000100a5241ffc76044582a1bd06a340adaf52d17503e2e6429ed37b068162c93da365aa39b5d28bc1f7b69a2988da2f1c9bcfd50cb6ebad3b0530488a34132051f55c916d933c17a64f4811d2139167880b5a0d7ba8aa77dff272f0217b425df20c0990d29b19451301e37db3c9fee7a8a7252e14b5889698c53a98d86f6552e783a7")]
