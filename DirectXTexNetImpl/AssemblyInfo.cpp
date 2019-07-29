@@ -31,8 +31,8 @@ using namespace System::Security::Permissions;
 // You can specify all the value or you can default the Revision and Build Numbers
 // by using the '*' as shown below:
 
-[assembly:AssemblyVersion("1.0.0.3")];
-[assembly:AssemblyInformationalVersion("1.0.0-rc3")]
+[assembly:AssemblyVersion("1.0.0.4")];
+[assembly:AssemblyInformationalVersion("1.0.0-rc4")]
 
 [assembly:ComVisible(false)];
 
