@@ -5,9 +5,9 @@
     <Company>Dennis Gocke</Company>
     <Product>DirectXTexNet</Product>
     <Description>.NET wrapper for DirectXTex</Description>
-    <Copyright>Copyright © 2019 Dennis Gocke</Copyright>
-    <Version>1.0.0-rc4</Version>
-    <AssemblyVersion>1.0.0.4</AssemblyVersion>
+    <Copyright>Copyright © 2020 Dennis Gocke</Copyright>
+    <Version>1.0.0-rc5</Version>
+    <AssemblyVersion>1.0.0.5</AssemblyVersion>
     <FileVersion>1.0.0.4</FileVersion>
     <DocumentationFile>..\bin\$(Configuration)\DirectXTexNet.XML</DocumentationFile>
     <OutputPath>..\bin\$(Configuration)\</OutputPath>

@@ -939,6 +939,10 @@ namespace DirectXTexNet
         public abstract void SaveToWICFile(Size_t imageIndex, WIC_FLAGS flags, Guid guidContainerFormat, String szFile);
 
         public abstract void SaveToWICFile(Size_t startIndex, Size_t nImages, WIC_FLAGS flags, Guid guidContainerFormat, String szFile);
+
+        public abstract UnmanagedMemoryStream SaveToJPGMemory(Size_t imageIndex, float quality);
+        
+        public abstract void SaveToJPGFile(Size_t imageIndex, float quality, String szFile);
         #endregion
 
         #region Texture conversion, resizing, mipmap generation, and block compression

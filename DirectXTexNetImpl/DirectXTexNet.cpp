@@ -691,6 +691,63 @@ namespace DirectXTexNet
 		Marshal::ThrowExceptionForHR(hr);
 	}
 
+	HRESULT SaveToJPGMemoryHelper(const DirectX::Image& image, float quality, DirectX::Blob& blob)
+	{
+		return DirectX::SaveToWICMemory(image, 0, GUID_ContainerFormatJpeg, blob, nullptr, [&](IPropertyBag2* props)
+			{
+				PROPBAG2 options[1] = { 0 };
+				options[0].pstrName = const_cast<wchar_t*>(L"ImageQuality");
+	
+				VARIANT varValues[1];
+				varValues[0].vt = VT_R4;
+				varValues[0].fltVal = quality;
+
+				(void)props->Write(1, options, varValues);
+			});
+	}
+
+	UnmanagedMemoryStream^ ScratchImageImpl::SaveToJPGMemory(Size_t imageIndex, float quality)
+	{
+		DirectX::Blob* blob = new DirectX::Blob();
+		try
+		{
+			auto hr = SaveToJPGMemoryHelper(*GetImageInternal(imageIndex), quality, *blob);
+
+			Marshal::ThrowExceptionForHR(hr);
+			return gcnew BlobImpl(blob);
+		}
+		catch (Exception^)
+		{
+			delete blob;
+			throw;
+		}
+	}
+
+	HRESULT SaveToJPGFileHelper(const DirectX::Image& image, float quality, const wchar_t* filenameCStr)
+	{
+		return DirectX::SaveToWICFile(image, 0, GUID_ContainerFormatJpeg, filenameCStr, nullptr, [&](IPropertyBag2* props)
+			{
+				PROPBAG2 options[1] = { 0 };
+				options[0].pstrName = const_cast<wchar_t*>(L"ImageQuality");
+	
+				VARIANT varValues[1];
+				varValues[0].vt = VT_R4;
+				varValues[0].fltVal = quality;
+
+				(void)props->Write(1, options, varValues);
+			});
+	}
+
+	void ScratchImageImpl::SaveToJPGFile(Size_t imageIndex, float quality, String^ szFile)
+	{
+		pin_ptr<const wchar_t> filenameCStr = PtrToStringChars(szFile);
+		auto hr = SaveToJPGFileHelper(*GetImageInternal(imageIndex), quality, filenameCStr);
+
+		Marshal::ThrowExceptionForHR(hr);
+	}
+
+
+
 	//---------------------------------------------------------------------------------
 	// Texture conversion, resizing, mipmap generation, and block compression
 	ScratchImage^ ScratchImageImpl::FlipRotate(Size_t imageIndex, TEX_FR_FLAGS flags)

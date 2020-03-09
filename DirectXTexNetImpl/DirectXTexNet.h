@@ -179,11 +179,14 @@ namespace DirectXTexNet
 		UnmanagedMemoryStream^ SaveToWICMemory(Size_t imageIndex, WIC_FLAGS flags, Guid guidContainerFormat) override;
 
 		UnmanagedMemoryStream^ SaveToWICMemory(Size_t startIndex, Size_t nImages, WIC_FLAGS flags, Guid guidContainerFormat) override;
-
+		
 		void SaveToWICFile(Size_t imageIndex, WIC_FLAGS flags, Guid guidContainerFormat, String^ szFile) override;
 
 		void SaveToWICFile(Size_t startIndex, Size_t nImages, WIC_FLAGS flags, Guid guidContainerFormat, String^ szFile) override;
 
+		UnmanagedMemoryStream^ SaveToJPGMemory(Size_t imageIndex, float quality) override;
+
+		void SaveToJPGFile(Size_t imageIndex, float quality, String^ szFile) override;
 
 		// Texture conversion, resizing, mipmap generation, and block compression
 		ScratchImage^ FlipRotate(Size_t imageIndex, TEX_FR_FLAGS flags) override;
