@@ -941,7 +941,7 @@ namespace DirectXTexNet
         public abstract void SaveToWICFile(Size_t startIndex, Size_t nImages, WIC_FLAGS flags, Guid guidContainerFormat, String szFile);
 
         public abstract UnmanagedMemoryStream SaveToJPGMemory(Size_t imageIndex, float quality);
-        
+
         public abstract void SaveToJPGFile(Size_t imageIndex, float quality, String szFile);
         #endregion
 
@@ -1123,14 +1123,31 @@ namespace DirectXTexNet
 
     public abstract class TexHelper
     {
-        public static readonly TexHelper Instance;
+        public static TexHelper Instance { get; private set; }
 
         static TexHelper()
         {
-            String folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            String filePath = Path.Combine(folder, Environment.Is64BitProcess ? "x64" : "x86", "DirectXTexNetImpl.dll");
-            Assembly assembly = Assembly.LoadFile(filePath);
-            Instance = (TexHelper)Activator.CreateInstance(assembly.GetType("DirectXTexNet.TexHelperImpl"));
+            string folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string fileName = "DirectXTexNetImpl.dll";
+            string platform = Environment.Is64BitProcess ? "x64" : "x86";
+
+            foreach (var filePath in new[]
+                                     {
+                                         Path.Combine(folder, fileName),
+                                         Path.Combine(folder, platform, fileName),
+                                         Path.Combine(folder, "runtimes", "win-" + platform, "native", fileName)
+                                     })
+            {
+                if (File.Exists(filePath))
+                {
+                    LoadInstanceFrom(filePath);
+                }
+            }
+        }
+
+        public static void LoadInstanceFrom(string filePath)
+        {
+            Instance = (TexHelper)Activator.CreateInstance(Assembly.LoadFile(filePath).GetType("DirectXTexNet.TexHelperImpl"));
         }
 
         public readonly Size_t IndexOutOfRange = unchecked((Size_t)(Environment.Is64BitProcess ? UInt64.MaxValue : UInt32.MaxValue));
