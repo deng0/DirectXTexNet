@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 // The unmanaged size_t is UInt32 in 32bit processes and UInt64 in 64bit processes
 // For simplicity and CLS compliancy we generally use Int32, but where it matters Int64
@@ -136,6 +137,10 @@ namespace DirectXTexNet
         P8 = 113,
         A8P8 = 114,
         B4G4R4A4_UNORM = 115,
+
+        P208 = 130,
+        V208 = 131,
+        V408 = 132,
         //FORCE_UINT = 0xffffffff
     }
 
@@ -187,7 +192,8 @@ namespace DirectXTexNet
         RESTRICT_SHARED_RESOURCE_DRIVER = 0x4000,
         GUARDED = 0x8000,
         TILE_POOL = 0x20000,
-        TILED = 0x40000
+        TILED = 0x40000,
+        HW_PROTECTED = 0x80000
     }
 
     [Flags]
@@ -317,7 +323,17 @@ namespace DirectXTexNet
         /// <summary>
         /// FORCE_DX10_EXT including miscFlags2 information (result may not be compatible with D3DX10 or D3DX11)
         /// </summary>
-        FORCE_DX10_EXT_MISC2 = 0x20000
+        FORCE_DX10_EXT_MISC2 = 0x20000,
+
+        /// <summary>
+        /// Force use of legacy header for DDS writer (will fail if unable to write as such)
+        /// </summary>
+        FORCE_DX9_LEGACY = 0x40000,
+
+        /// <summary>
+        /// Enables the loader to read large dimension .dds files (i.e. greater than known hardware requirements)
+        /// </summary>
+        ALLOW_LARGE_FILES = 0x1000000,
     }
 
     [Flags]
@@ -354,6 +370,21 @@ namespace DirectXTexNet
         /// Ignores sRGB metadata if present in the file
         /// </summary>
         IGNORE_SRGB = 0x20,
+
+        /// <summary>
+        /// Writes sRGB metadata into the file reguardless of format
+        /// </summary>
+        FORCE_SRGB = 0x40,
+
+        /// <summary>
+        /// Writes linear gamma metadata into the file reguardless of format
+        /// </summary>
+        FORCE_LINEAR = 0x80,
+
+        /// <summary>
+        /// If no colorspace is specified, assume sRGB
+        /// </summary>
+        DEFAULT_SRGB = 0x100,
 
         /// <summary>
         /// Use ordered 4x4 dithering for any required conversions
@@ -710,6 +741,7 @@ namespace DirectXTexNet
     /// <param name="pixels">The pixels. This a row of Pixels with each pixel normally represented as RBGA in 4x32bit float (0.0-1.0).</param>
     /// <param name="width">The width.</param>
     /// <param name="y">The y/row index.</param>
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void EvaluatePixelsDelegate(XMVectorPtr pixels, IntPtr width, IntPtr y);
 
     /// <summary>
@@ -722,6 +754,7 @@ namespace DirectXTexNet
     /// <param name="inPixels">The input pixels. This a row of Pixels with each pixel normally represented as RBGA in 4x32bit float (0.0-1.0).</param>
     /// <param name="width">The width.</param>
     /// <param name="y">The y/row index.</param>
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void TransformPixelsDelegate(XMVectorPtr outPixels, XMVectorPtr inPixels, IntPtr width, IntPtr y);
     #endregion
 

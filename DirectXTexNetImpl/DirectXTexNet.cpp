@@ -75,7 +75,7 @@ namespace DirectXTexNet
 	{
 		size_t _rowPitch;
 		size_t _slicePitch;
-		DirectX::ComputePitch(static_cast<::DXGI_FORMAT>(fmt), width, height, _rowPitch, _slicePitch, static_cast<DWORD>(flags));
+		DirectX::ComputePitch(static_cast<::DXGI_FORMAT>(fmt), width, height, _rowPitch, _slicePitch, static_cast<DirectX::CP_FLAGS>(flags));
 		rowPitch = (_rowPitch);
 		slicePitch = (_slicePitch);
 	}
@@ -111,7 +111,7 @@ namespace DirectXTexNet
 	TexMetadata^ TexHelperImpl::GetMetadataFromDDSMemory(IntPtr pSource, Size_T size, DDS_FLAGS flags)
 	{
 		DirectX::TexMetadata native;
-		auto hr = DirectX::GetMetadataFromDDSMemory(pSource.ToPointer(), static_cast<size_t>(size), static_cast<DWORD>(flags), native);
+		auto hr = DirectX::GetMetadataFromDDSMemory(pSource.ToPointer(), static_cast<size_t>(size), static_cast<DirectX::DDS_FLAGS>(flags), native);
 		Marshal::ThrowExceptionForHR(hr);
 		return ToManaged(native);
 	}
@@ -119,7 +119,7 @@ namespace DirectXTexNet
 	{
 		pin_ptr<const wchar_t> filenameCStr = PtrToStringChars(szFile);
 		DirectX::TexMetadata native;
-		auto hr = DirectX::GetMetadataFromDDSFile(filenameCStr, static_cast<DWORD>(flags), native);
+		auto hr = DirectX::GetMetadataFromDDSFile(filenameCStr, static_cast<DirectX::DDS_FLAGS>(flags), native);
 		Marshal::ThrowExceptionForHR(hr);
 		return ToManaged(native);
 	}
@@ -156,7 +156,7 @@ namespace DirectXTexNet
 	TexMetadata^ TexHelperImpl::GetMetadataFromWICMemory(IntPtr pSource, Size_T size, WIC_FLAGS flags)
 	{
 		DirectX::TexMetadata native;
-		auto hr = DirectX::GetMetadataFromWICMemory(pSource.ToPointer(), static_cast<size_t>(size), static_cast<DWORD>(flags), native);
+		auto hr = DirectX::GetMetadataFromWICMemory(pSource.ToPointer(), static_cast<size_t>(size), static_cast<DirectX::WIC_FLAGS>(flags), native);
 		Marshal::ThrowExceptionForHR(hr);
 		return ToManaged(native);
 	}
@@ -164,7 +164,7 @@ namespace DirectXTexNet
 	{
 		pin_ptr<const wchar_t> filenameCStr = PtrToStringChars(szFile);
 		DirectX::TexMetadata native;
-		auto hr = DirectX::GetMetadataFromWICFile(filenameCStr, static_cast<DWORD>(flags), native);
+		auto hr = DirectX::GetMetadataFromWICFile(filenameCStr, static_cast<DirectX::WIC_FLAGS>(flags), native);
 		Marshal::ThrowExceptionForHR(hr);
 		return ToManaged(native);
 	}
@@ -179,7 +179,7 @@ namespace DirectXTexNet
 		{
 			DirectX::TexMetadata native;
 			FromManaged(_metadata, native);
-			HRESULT hr = image->scratchImage_->Initialize(native, static_cast<DWORD>(flags));
+			HRESULT hr = image->scratchImage_->Initialize(native, static_cast<DirectX::CP_FLAGS>(flags));
 			Marshal::ThrowExceptionForHR(hr);
 			return image;
 		}
@@ -195,7 +195,7 @@ namespace DirectXTexNet
 
 		try
 		{
-			HRESULT hr = image->scratchImage_->Initialize1D(static_cast<::DXGI_FORMAT>(fmt), length, arraySize, mipLevels, static_cast<DWORD>(flags));
+			HRESULT hr = image->scratchImage_->Initialize1D(static_cast<::DXGI_FORMAT>(fmt), length, arraySize, mipLevels, static_cast<DirectX::CP_FLAGS>(flags));
 			Marshal::ThrowExceptionForHR(hr);
 			return image;
 		}
@@ -211,7 +211,7 @@ namespace DirectXTexNet
 
 		try
 		{
-			HRESULT hr = image->scratchImage_->Initialize2D(static_cast<::DXGI_FORMAT>(fmt), width, height, arraySize, mipLevels, static_cast<DWORD>(flags));
+			HRESULT hr = image->scratchImage_->Initialize2D(static_cast<::DXGI_FORMAT>(fmt), width, height, arraySize, mipLevels, static_cast<DirectX::CP_FLAGS>(flags));
 			Marshal::ThrowExceptionForHR(hr);
 			return image;
 		}
@@ -227,7 +227,7 @@ namespace DirectXTexNet
 
 		try
 		{
-			HRESULT hr = image->scratchImage_->Initialize3D(static_cast<::DXGI_FORMAT>(fmt), width, height, depth, mipLevels, static_cast<DWORD>(flags));
+			HRESULT hr = image->scratchImage_->Initialize3D(static_cast<::DXGI_FORMAT>(fmt), width, height, depth, mipLevels, static_cast<DirectX::CP_FLAGS>(flags));
 			Marshal::ThrowExceptionForHR(hr);
 			return image;
 		}
@@ -243,7 +243,7 @@ namespace DirectXTexNet
 
 		try
 		{
-			HRESULT hr = image->scratchImage_->InitializeCube(static_cast<::DXGI_FORMAT>(fmt), width, height, nCubes, mipLevels, static_cast<DWORD>(flags));
+			HRESULT hr = image->scratchImage_->InitializeCube(static_cast<::DXGI_FORMAT>(fmt), width, height, nCubes, mipLevels, static_cast<DirectX::CP_FLAGS>(flags));
 			Marshal::ThrowExceptionForHR(hr);
 			return image;
 		}
@@ -267,7 +267,7 @@ namespace DirectXTexNet
 
 		try
 		{
-			HRESULT hr = image->scratchImage_->InitializeFromImage(*GetImageInternal(imageIndex), allow1D, static_cast<DWORD>(flags));
+			HRESULT hr = image->scratchImage_->InitializeFromImage(*GetImageInternal(imageIndex), allow1D, static_cast<DirectX::CP_FLAGS>(flags));
 			Marshal::ThrowExceptionForHR(hr);
 			return image;
 		}
@@ -283,7 +283,7 @@ namespace DirectXTexNet
 
 		try
 		{
-			HRESULT hr = image->scratchImage_->InitializeArrayFromImages(GetImagesInternal() + static_cast<size_t>(startIndex), nImages, allow1D, static_cast<DWORD>(flags));
+			HRESULT hr = image->scratchImage_->InitializeArrayFromImages(GetImagesInternal() + static_cast<size_t>(startIndex), nImages, allow1D, static_cast<DirectX::CP_FLAGS>(flags));
 			Marshal::ThrowExceptionForHR(hr);
 			return image;
 		}
@@ -299,7 +299,7 @@ namespace DirectXTexNet
 
 		try
 		{
-			HRESULT hr = image->scratchImage_->InitializeCubeFromImages(GetImagesInternal() + static_cast<size_t>(startIndex), nImages, static_cast<DWORD>(flags));
+			HRESULT hr = image->scratchImage_->InitializeCubeFromImages(GetImagesInternal() + static_cast<size_t>(startIndex), nImages, static_cast<DirectX::CP_FLAGS>(flags));
 			Marshal::ThrowExceptionForHR(hr);
 
 			return image;
@@ -316,7 +316,7 @@ namespace DirectXTexNet
 
 		try
 		{
-			HRESULT hr = image->scratchImage_->Initialize3DFromImages(GetImagesInternal() + static_cast<size_t>(startIndex), depth, static_cast<DWORD>(flags));
+			HRESULT hr = image->scratchImage_->Initialize3DFromImages(GetImagesInternal() + static_cast<size_t>(startIndex), depth, static_cast<DirectX::CP_FLAGS>(flags));
 			Marshal::ThrowExceptionForHR(hr);
 
 			return image;
@@ -337,11 +337,11 @@ namespace DirectXTexNet
 			HRESULT hr;
 			if (metaData.miscFlags & DirectX::TEX_MISC_TEXTURECUBE)
 			{
-				hr = image->scratchImage_->InitializeCube(static_cast<::DXGI_FORMAT>(fmt), metaData.width, metaData.height, metaData.arraySize / 6, levels, static_cast<DWORD>(flags));
+				hr = image->scratchImage_->InitializeCube(static_cast<::DXGI_FORMAT>(fmt), metaData.width, metaData.height, metaData.arraySize / 6, levels, static_cast<DirectX::CP_FLAGS>(flags));
 			}
 			else
 			{
-				hr = image->scratchImage_->Initialize2D(static_cast<::DXGI_FORMAT>(fmt), metaData.width, metaData.height, metaData.arraySize, levels, static_cast<DWORD>(flags));
+				hr = image->scratchImage_->Initialize2D(static_cast<::DXGI_FORMAT>(fmt), metaData.width, metaData.height, metaData.arraySize, levels, static_cast<DirectX::CP_FLAGS>(flags));
 			}
 
 			Marshal::ThrowExceptionForHR(hr);
@@ -353,7 +353,7 @@ namespace DirectXTexNet
 					*GetImageInternal(0, item, 0),
 					DirectX::Rect(0, 0, metaData.width, metaData.height),
 					*image->scratchImage_->GetImage(0, item, 0),
-					0,	// Filter -- not needed since source and dest format are the same.
+					DirectX::TEX_FILTER_DEFAULT,	// Filter -- not needed since source and dest format are the same.
 					0,
 					0);
 				Marshal::ThrowExceptionForHR(hr);
@@ -389,7 +389,7 @@ namespace DirectXTexNet
 		auto image = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::LoadFromDDSMemory(pSource.ToPointer(), static_cast<size_t>(size), static_cast<DWORD>(flags), nullptr, *image->scratchImage_);
+			auto hr = DirectX::LoadFromDDSMemory(pSource.ToPointer(), static_cast<size_t>(size), static_cast<DirectX::DDS_FLAGS>(flags), nullptr, *image->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 
@@ -408,7 +408,7 @@ namespace DirectXTexNet
 		auto image = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::LoadFromDDSFile(filenameCStr, static_cast<DWORD>(flags), nullptr, *image->scratchImage_);
+			auto hr = DirectX::LoadFromDDSFile(filenameCStr, static_cast<DirectX::DDS_FLAGS>(flags), nullptr, *image->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 
@@ -425,7 +425,7 @@ namespace DirectXTexNet
 		DirectX::Blob* blob = new DirectX::Blob();
 		try
 		{
-			auto hr = DirectX::SaveToDDSMemory(*GetImageInternal(imageIndex), static_cast<DWORD>(flags), *blob);
+			auto hr = DirectX::SaveToDDSMemory(*GetImageInternal(imageIndex), static_cast<DirectX::DDS_FLAGS>(flags), *blob);
 
 			Marshal::ThrowExceptionForHR(hr);
 
@@ -442,7 +442,7 @@ namespace DirectXTexNet
 		DirectX::Blob* blob = new DirectX::Blob();
 		try
 		{
-			auto hr = DirectX::SaveToDDSMemory(GetImagesInternal(), GetImageCountInternal(), GetMetadataInternal(), static_cast<DWORD>(flags), *blob);
+			auto hr = DirectX::SaveToDDSMemory(GetImagesInternal(), GetImageCountInternal(), GetMetadataInternal(), static_cast<DirectX::DDS_FLAGS>(flags), *blob);
 
 			Marshal::ThrowExceptionForHR(hr);
 
@@ -458,7 +458,7 @@ namespace DirectXTexNet
 	{
 		pin_ptr<const wchar_t> filenameCStr = PtrToStringChars(szFile);
 
-		auto hr = DirectX::SaveToDDSFile(*GetImageInternal(imageIndex), static_cast<DWORD>(flags), filenameCStr);
+		auto hr = DirectX::SaveToDDSFile(*GetImageInternal(imageIndex), static_cast<DirectX::DDS_FLAGS>(flags), filenameCStr);
 
 		Marshal::ThrowExceptionForHR(hr);
 	}
@@ -466,7 +466,7 @@ namespace DirectXTexNet
 	{
 		pin_ptr<const wchar_t> filenameCStr = PtrToStringChars(szFile);
 
-		auto hr = DirectX::SaveToDDSFile(GetImagesInternal(), GetImageCountInternal(), GetMetadataInternal(), static_cast<DWORD>(flags), filenameCStr);
+		auto hr = DirectX::SaveToDDSFile(GetImagesInternal(), GetImageCountInternal(), GetMetadataInternal(), static_cast<DirectX::DDS_FLAGS>(flags), filenameCStr);
 
 		Marshal::ThrowExceptionForHR(hr);
 	}
@@ -603,7 +603,7 @@ namespace DirectXTexNet
 		auto image = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::LoadFromWICMemory(pSource.ToPointer(), static_cast<size_t>(size), static_cast<DWORD>(flags), nullptr, *image->scratchImage_);
+			auto hr = DirectX::LoadFromWICMemory(pSource.ToPointer(), static_cast<size_t>(size), static_cast<DirectX::WIC_FLAGS>(flags), nullptr, *image->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 
@@ -622,7 +622,7 @@ namespace DirectXTexNet
 		auto image = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::LoadFromWICFile(filenameCStr, static_cast<DWORD>(flags), nullptr, *image->scratchImage_);
+			auto hr = DirectX::LoadFromWICFile(filenameCStr, static_cast<DirectX::WIC_FLAGS>(flags), nullptr, *image->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 
@@ -641,7 +641,7 @@ namespace DirectXTexNet
 		{
 			pin_ptr<Guid> ptrGuid = &guidContainerFormat;
 			GUID* ptrGUID = (GUID*)ptrGuid;
-			auto hr = DirectX::SaveToWICMemory(*GetImageInternal(imageIndex), static_cast<DWORD>(flags), *ptrGUID, *blob);
+			auto hr = DirectX::SaveToWICMemory(*GetImageInternal(imageIndex), static_cast<DirectX::WIC_FLAGS>(flags), *ptrGUID, *blob);
 
 			Marshal::ThrowExceptionForHR(hr);
 			return gcnew BlobImpl(blob);
@@ -659,7 +659,7 @@ namespace DirectXTexNet
 		{
 			pin_ptr<Guid> ptrGuid = &guidContainerFormat;
 			GUID* ptrGUID = (GUID*)ptrGuid;
-			auto hr = DirectX::SaveToWICMemory(GetImagesInternal() + static_cast<size_t>(startIndex), nImages, static_cast<DWORD>(flags), *ptrGUID, *blob);
+			auto hr = DirectX::SaveToWICMemory(GetImagesInternal() + static_cast<size_t>(startIndex), nImages, static_cast<DirectX::WIC_FLAGS>(flags), *ptrGUID, *blob);
 
 			Marshal::ThrowExceptionForHR(hr);
 
@@ -676,7 +676,7 @@ namespace DirectXTexNet
 		pin_ptr<const wchar_t> filenameCStr = PtrToStringChars(szFile);
 		pin_ptr<Guid> ptrGuid = &guidContainerFormat;
 		GUID* ptrGUID = (GUID*)ptrGuid;
-		auto hr = DirectX::SaveToWICFile(*GetImageInternal(imageIndex), static_cast<DWORD>(flags), *ptrGUID, filenameCStr);
+		auto hr = DirectX::SaveToWICFile(*GetImageInternal(imageIndex), static_cast<DirectX::WIC_FLAGS>(flags), *ptrGUID, filenameCStr);
 
 		Marshal::ThrowExceptionForHR(hr);
 	}
@@ -686,14 +686,14 @@ namespace DirectXTexNet
 
 		pin_ptr<Guid> ptrGuid = &guidContainerFormat;
 		GUID* ptrGUID = (GUID*)ptrGuid;
-		auto hr = DirectX::SaveToWICFile(GetImagesInternal() + static_cast<size_t>(startIndex), nImages, static_cast<DWORD>(flags), *ptrGUID, filenameCStr);
+		auto hr = DirectX::SaveToWICFile(GetImagesInternal() + static_cast<size_t>(startIndex), nImages, static_cast<DirectX::WIC_FLAGS>(flags), *ptrGUID, filenameCStr);
 
 		Marshal::ThrowExceptionForHR(hr);
 	}
 
 	HRESULT SaveToJPGMemoryHelper(const DirectX::Image& image, float quality, DirectX::Blob& blob)
 	{
-		return DirectX::SaveToWICMemory(image, 0, GUID_ContainerFormatJpeg, blob, nullptr, [&](IPropertyBag2* props)
+		return DirectX::SaveToWICMemory(image, DirectX::WIC_FLAGS_NONE, GUID_ContainerFormatJpeg, blob, nullptr, [&](IPropertyBag2* props)
 			{
 				PROPBAG2 options[1] = { 0 };
 				options[0].pstrName = const_cast<wchar_t*>(L"ImageQuality");
@@ -725,7 +725,7 @@ namespace DirectXTexNet
 
 	HRESULT SaveToJPGFileHelper(const DirectX::Image& image, float quality, const wchar_t* filenameCStr)
 	{
-		return DirectX::SaveToWICFile(image, 0, GUID_ContainerFormatJpeg, filenameCStr, nullptr, [&](IPropertyBag2* props)
+		return DirectX::SaveToWICFile(image, DirectX::WIC_FLAGS_NONE, GUID_ContainerFormatJpeg, filenameCStr, nullptr, [&](IPropertyBag2* props)
 			{
 				PROPBAG2 options[1] = { 0 };
 				options[0].pstrName = const_cast<wchar_t*>(L"ImageQuality");
@@ -755,7 +755,7 @@ namespace DirectXTexNet
 		auto result = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::FlipRotate(*GetImageInternal(imageIndex), static_cast<DWORD>(flags), *result->scratchImage_);
+			auto hr = DirectX::FlipRotate(*GetImageInternal(imageIndex), static_cast<DirectX::TEX_FR_FLAGS>(flags), *result->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 
@@ -772,7 +772,7 @@ namespace DirectXTexNet
 		auto result = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::FlipRotate(GetImagesInternal(), GetImageCountInternal(), GetMetadataInternal(), static_cast<DWORD>(flags), *result->scratchImage_);
+			auto hr = DirectX::FlipRotate(GetImagesInternal(), GetImageCountInternal(), GetMetadataInternal(), static_cast<DirectX::TEX_FR_FLAGS>(flags), *result->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 
@@ -789,7 +789,7 @@ namespace DirectXTexNet
 		auto result = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::Resize(*GetImageInternal(imageIndex), width, height, static_cast<DWORD>(filter), *result->scratchImage_);
+			auto hr = DirectX::Resize(*GetImageInternal(imageIndex), width, height, static_cast<DirectX::TEX_FILTER_FLAGS>(filter), *result->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 
@@ -806,7 +806,7 @@ namespace DirectXTexNet
 		auto result = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::Resize(GetImagesInternal(), GetImageCountInternal(), GetMetadataInternal(), width, height, static_cast<DWORD>(filter), *result->scratchImage_);
+			auto hr = DirectX::Resize(GetImagesInternal(), GetImageCountInternal(), GetMetadataInternal(), width, height, static_cast<DirectX::TEX_FILTER_FLAGS>(filter), *result->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 
@@ -823,7 +823,7 @@ namespace DirectXTexNet
 		auto result = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::Convert(*GetImageInternal(imageIndex), static_cast<::DXGI_FORMAT>(format), static_cast<DWORD>(filter), threshold, *result->scratchImage_);
+			auto hr = DirectX::Convert(*GetImageInternal(imageIndex), static_cast<::DXGI_FORMAT>(format), static_cast<DirectX::TEX_FILTER_FLAGS>(filter), threshold, *result->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 
@@ -840,7 +840,7 @@ namespace DirectXTexNet
 		auto result = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::Convert(GetImagesInternal(), GetImageCountInternal(), GetMetadataInternal(), static_cast<::DXGI_FORMAT>(format), static_cast<DWORD>(filter), threshold, *result->scratchImage_);
+			auto hr = DirectX::Convert(GetImagesInternal(), GetImageCountInternal(), GetMetadataInternal(), static_cast<::DXGI_FORMAT>(format), static_cast<DirectX::TEX_FILTER_FLAGS>(filter), threshold, *result->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 
@@ -891,7 +891,7 @@ namespace DirectXTexNet
 		auto image = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::GenerateMipMaps(*GetImageInternal(imageIndex), static_cast<DWORD>(filter), levels, *image->scratchImage_, allow1D);
+			auto hr = DirectX::GenerateMipMaps(*GetImageInternal(imageIndex), static_cast<DirectX::TEX_FILTER_FLAGS>(filter), levels, *image->scratchImage_, allow1D);
 
 			Marshal::ThrowExceptionForHR(hr);
 			return image;
@@ -908,7 +908,7 @@ namespace DirectXTexNet
 		try
 		{
 			auto hr = DirectX::GenerateMipMaps(GetImagesInternal(), GetImageCountInternal(),
-				GetMetadataInternal(), static_cast<DWORD>(filter), levels, *image->scratchImage_);
+				GetMetadataInternal(), static_cast<DirectX::TEX_FILTER_FLAGS>(filter), levels, *image->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 			return image;
@@ -924,7 +924,7 @@ namespace DirectXTexNet
 		auto image = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::GenerateMipMaps3D(GetImagesInternal() + static_cast<size_t>(startIndex), depth, static_cast<DWORD>(filter), levels, *image->scratchImage_);
+			auto hr = DirectX::GenerateMipMaps3D(GetImagesInternal() + static_cast<size_t>(startIndex), depth, static_cast<DirectX::TEX_FILTER_FLAGS>(filter), levels, *image->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 			return image;
@@ -941,7 +941,7 @@ namespace DirectXTexNet
 		try
 		{
 			auto hr = DirectX::GenerateMipMaps3D(GetImagesInternal(), GetImageCountInternal(),
-				GetMetadataInternal(), static_cast<DWORD>(filter), levels, *image->scratchImage_);
+				GetMetadataInternal(), static_cast<DirectX::TEX_FILTER_FLAGS>(filter), levels, *image->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 			return image;
@@ -957,7 +957,7 @@ namespace DirectXTexNet
 		auto image = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::PremultiplyAlpha(*GetImageInternal(imageIndex), static_cast<DWORD>(flags), *image->scratchImage_);
+			auto hr = DirectX::PremultiplyAlpha(*GetImageInternal(imageIndex), static_cast<DirectX::TEX_PMALPHA_FLAGS>(flags), *image->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 			return image;
@@ -974,7 +974,7 @@ namespace DirectXTexNet
 		try
 		{
 			auto hr = DirectX::PremultiplyAlpha(GetImagesInternal(), GetImageCountInternal(),
-				GetMetadataInternal(), static_cast<DWORD>(flags), *image->scratchImage_);
+				GetMetadataInternal(), static_cast<DirectX::TEX_PMALPHA_FLAGS>(flags), *image->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 			return image;
@@ -990,7 +990,7 @@ namespace DirectXTexNet
 		auto image = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::Compress(*GetImageInternal(imageIndex), static_cast<::DXGI_FORMAT>(format), static_cast<DWORD>(compress), threshold, *image->scratchImage_);
+			auto hr = DirectX::Compress(*GetImageInternal(imageIndex), static_cast<::DXGI_FORMAT>(format), static_cast<DirectX::TEX_COMPRESS_FLAGS>(compress), threshold, *image->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 			return image;
@@ -1011,7 +1011,7 @@ namespace DirectXTexNet
 				GetImageCountInternal(),
 				GetMetadataInternal(),
 				static_cast<::DXGI_FORMAT>(format),
-				static_cast<DWORD>(compress),
+				static_cast<DirectX::TEX_COMPRESS_FLAGS>(compress),
 				threshold,
 				*image->scratchImage_);
 
@@ -1030,7 +1030,7 @@ namespace DirectXTexNet
 		auto image = gcnew ActualScratchImageImpl();
 		try
 		{
-			auto hr = DirectX::Compress(static_cast<ID3D11Device*>(pDevice.ToPointer()), *GetImageInternal(imageIndex), static_cast<::DXGI_FORMAT>(format), static_cast<DWORD>(compress), alphaWeight, *image->scratchImage_);
+			auto hr = DirectX::Compress(static_cast<ID3D11Device*>(pDevice.ToPointer()), *GetImageInternal(imageIndex), static_cast<::DXGI_FORMAT>(format), static_cast<DirectX::TEX_COMPRESS_FLAGS>(compress), alphaWeight, *image->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 			return image;
@@ -1052,7 +1052,7 @@ namespace DirectXTexNet
 				GetImageCountInternal(),
 				GetMetadataInternal(),
 				static_cast<::DXGI_FORMAT>(format),
-				static_cast<DWORD>(compress),
+				static_cast<DirectX::TEX_COMPRESS_FLAGS>(compress),
 				alphaWeight,
 				*image->scratchImage_);
 
@@ -1114,9 +1114,10 @@ namespace DirectXTexNet
 		{
 			auto hr = DirectX::ComputeNormalMap(
 				*GetImageInternal(imageIndex),
-				static_cast<DWORD>(flags),
+				static_cast<DirectX::CNMAP_FLAGS>(flags),
 				amplitude,
-				static_cast<::DXGI_FORMAT>(format), *image->scratchImage_);
+				static_cast<::DXGI_FORMAT>(format), 
+				*image->scratchImage_);
 
 			Marshal::ThrowExceptionForHR(hr);
 			return image;
@@ -1136,7 +1137,7 @@ namespace DirectXTexNet
 				GetImagesInternal(),
 				GetImageCountInternal(),
 				GetMetadataInternal(),
-				static_cast<DWORD>(flags),
+				static_cast<DirectX::CNMAP_FLAGS>(flags),
 				amplitude,
 				static_cast<::DXGI_FORMAT>(format),
 				*image->scratchImage_);
@@ -1169,7 +1170,7 @@ namespace DirectXTexNet
 		FromManaged(srcImage, nativeSrc);
 		FromManaged(dstImage, nativeDst);
 		DirectX::Rect rect = DirectX::Rect(srcX, srcY, srcWidth, srcHeight);
-		auto hr = DirectX::CopyRectangle(nativeSrc, rect, nativeDst, static_cast<DWORD>(filter), xOffset, yOffset);
+		auto hr = DirectX::CopyRectangle(nativeSrc, rect, nativeDst, static_cast<DirectX::TEX_FILTER_FLAGS>(filter), xOffset, yOffset);
 
 		Marshal::ThrowExceptionForHR(hr);
 	}
@@ -1181,7 +1182,7 @@ namespace DirectXTexNet
 		pin_ptr<float> ptrMse = &mse;
 		pin_ptr<MseV> ptrMseV = &mseV;
 
-		auto hr = DirectX::ComputeMSE(nativeImage, nativeImage2, *(float*)ptrMse, (float*)ptrMseV, static_cast<DWORD>(flags));
+		auto hr = DirectX::ComputeMSE(nativeImage, nativeImage2, *(float*)ptrMse, (float*)ptrMseV, static_cast<DirectX::CMSE_FLAGS>(flags));
 
 		Marshal::ThrowExceptionForHR(hr);
 	}

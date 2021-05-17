@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AssemblyTitle>DirectXTexNet</AssemblyTitle>
     <Company>Dennis Gocke</Company>
     <Product>DirectXTexNet</Product>
     <Description>.NET wrapper for DirectXTex</Description>
-    <Copyright>Copyright © 2020 Dennis Gocke</Copyright>
-    <Version>1.0.1</Version>
-    <AssemblyVersion>1.0.1.0</AssemblyVersion>
-    <FileVersion>1.0.1.0</FileVersion>
+    <Copyright>Copyright © 2021 Dennis Gocke</Copyright>
+    <Version>1.0.2</Version>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <FileVersion>1.0.2.0</FileVersion>
     <DocumentationFile>..\bin\$(Configuration)\DirectXTexNet.XML</DocumentationFile>
     <OutputPath>..\bin\$(Configuration)\</OutputPath>
     <NoWarn>1591</NoWarn>

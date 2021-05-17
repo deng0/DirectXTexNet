@@ -70,9 +70,9 @@ namespace DirectXTexNet
 		native.dimension = static_cast<DirectX::TEX_DIMENSION>(managed->Dimension);
 	}
 
-	typedef void(__stdcall * EvaluatePixelsFunctionDeclaration)(const DirectX::XMVECTOR* pixels, size_t width, size_t y);
+	typedef void(__cdecl* EvaluatePixelsFunctionDeclaration)(_In_reads_(width) const DirectX::XMVECTOR* pixels, size_t width, size_t y);
 
-	typedef void(__stdcall * TransformPixelsFunctionDeclaration)(const DirectX::XMVECTOR* outPixels, const DirectX::XMVECTOR* inPixels, size_t width, size_t y);
+	typedef void(__cdecl* TransformPixelsFunctionDeclaration)(_Out_writes_(width) DirectX::XMVECTOR* outPixels, _In_reads_(width) const DirectX::XMVECTOR* inPixels, size_t width, size_t y);
 
 	ref class BlobImpl : public UnmanagedMemoryStream
 	{
