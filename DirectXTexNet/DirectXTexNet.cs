@@ -1160,7 +1160,7 @@ namespace DirectXTexNet
 
         static TexHelper()
         {
-            string folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string folder = Path.GetDirectoryName(AppContext.BaseDirectory);
             string fileName = "DirectXTexNetImpl.dll";
             string platform = Environment.Is64BitProcess ? "x64" : "x86";
 
