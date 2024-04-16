@@ -398,7 +398,7 @@ namespace DirectXTexNet.Test
 
         private string GetOutputFolder()
         {
-            string outFolder = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "OutImages");
+            string outFolder = Path.Combine(AppContext.BaseDirectory, "OutImages");
             if (!Directory.Exists(outFolder))
             {
                 Directory.CreateDirectory(outFolder);
@@ -413,7 +413,7 @@ namespace DirectXTexNet.Test
             var dirToFind = Path.Combine(@"DirectXTexNet.Test", "Images");
 
             // Search up directory tree starting at assembly path looking for 'Images' dir.
-            var searchPath = Path.GetDirectoryName(AppContext.BaseDirectory);
+            var searchPath = AppContext.BaseDirectory;
             while (true)
             {
                 var testPath = Path.Combine(searchPath, dirToFind);
