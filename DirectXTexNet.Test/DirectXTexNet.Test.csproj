@@ -6,8 +6,8 @@
     <Product>DirectXTexNet.Test</Product>
     <Description>Unit Tests for DirectXTexNet</Description>
     <Copyright>Copyright © 2024 Dennis Gocke</Copyright>
-    <AssemblyVersion>1.0.5</AssemblyVersion>
-    <FileVersion>1.0.5</FileVersion>
+    <AssemblyVersion>1.0.6</AssemblyVersion>
+    <FileVersion>1.0.6</FileVersion>
     <OutputPath>..\bin\$(Configuration)\</OutputPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Platforms>x64;x86</Platforms>
