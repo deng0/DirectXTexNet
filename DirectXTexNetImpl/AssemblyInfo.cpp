@@ -16,7 +16,7 @@ using namespace System::Security::Permissions;
 [assembly:AssemblyConfigurationAttribute(L"")];
 [assembly:AssemblyCompanyAttribute(L"Dennis Gocke")];
 [assembly:AssemblyProductAttribute(L"DirectXTexNetImpl")];
-[assembly:AssemblyCopyrightAttribute(L"Copyright (c) 2021 Dennis Gocke")];
+[assembly:AssemblyCopyrightAttribute(L"Copyright (c) 2024 Dennis Gocke")];
 [assembly:AssemblyTrademarkAttribute(L"")];
 [assembly:AssemblyCultureAttribute(L"")];
 
@@ -31,8 +31,8 @@ using namespace System::Security::Permissions;
 // You can specify all the value or you can default the Revision and Build Numbers
 // by using the '*' as shown below:
 
-[assembly:AssemblyVersion("1.0.3.0")];
-[assembly:AssemblyInformationalVersion("1.0.3")]
+[assembly:AssemblyVersion("1.0.4.0")];
+[assembly:AssemblyInformationalVersion("1.0.4")]
 
 [assembly:ComVisible(false)];
 
