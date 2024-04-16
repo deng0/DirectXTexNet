@@ -15,6 +15,8 @@ using ID3D11ResourcePtr = System.IntPtr;
 using ID3D11ShaderResourceViewPtr = System.IntPtr;
 using ID3D11DeviceContextPtr = System.IntPtr;
 using XMVectorPtr = System.IntPtr;
+using System.Runtime.Loader;
+using System.Runtime.CompilerServices;
 
 namespace DirectXTexNet
 {
@@ -1156,31 +1158,54 @@ namespace DirectXTexNet
 
     public abstract class TexHelper
     {
-        public static TexHelper Instance { get; private set; }
+        private static TexHelper instance;
 
-        static TexHelper()
+        public static TexHelper Instance
         {
-            string folder = AppContext.BaseDirectory;
-            string fileName = "DirectXTexNetImpl.dll";
-            string platform = Environment.Is64BitProcess ? "x64" : "x86";
+            get
+            {
+                if (instance == null)
+                {
+                    LoadInstance();
+                }
+                return instance;
+            }
+            set
+            {
+                instance = value;
+            }
+        }
 
-            foreach (var filePath in new[]
-                                     {
+        private static object lockObject = new object();
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void LoadInstance()
+        {
+            lock (lockObject)
+            {
+                string folder = AppContext.BaseDirectory;
+                string fileName = "DirectXTexNetImpl.dll";
+                string platform = Environment.Is64BitProcess ? "x64" : "x86";
+
+                foreach (var filePath in new[]
+                                         {
                                          Path.Combine(folder, fileName),
                                          Path.Combine(folder, platform, fileName),
                                          Path.Combine(folder, "runtimes", "win-" + platform, "native", fileName)
                                      })
-            {
-                if (File.Exists(filePath))
                 {
-                    LoadInstanceFrom(filePath);
+                    if (File.Exists(filePath))
+                    {
+                        LoadInstanceFrom(filePath);
+                    }
                 }
             }
         }
 
         public static void LoadInstanceFrom(string filePath)
         {
-            Instance = (TexHelper)Activator.CreateInstance(Assembly.LoadFile(filePath).GetType("DirectXTexNet.TexHelperImpl"));
+            AssemblyLoadContext loadContext = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly()) ?? AssemblyLoadContext.Default;
+            Instance = (TexHelper)Activator.CreateInstance(loadContext.LoadFromAssemblyPath(filePath).GetType("DirectXTexNet.TexHelperImpl"));
         }
 
         public readonly Size_t IndexOutOfRange = unchecked((Size_t)(Environment.Is64BitProcess ? UInt64.MaxValue : UInt32.MaxValue));
