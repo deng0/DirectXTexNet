@@ -1170,10 +1170,6 @@ namespace DirectXTexNet
                 }
                 return instance;
             }
-            set
-            {
-                instance = value;
-            }
         }
 
         private static object lockObject = new object();
@@ -1183,34 +1179,59 @@ namespace DirectXTexNet
         {
             lock (lockObject)
             {
-                string folder = AppContext.BaseDirectory;
-                string fileName = "DirectXTexNetImpl.dll";
-                string platform = Environment.Is64BitProcess ? "x64" : "x86";
+                if (instance == null)
+                {
+                    string folder = AppContext.BaseDirectory;
+                    string fileName = "DirectXTexNetImpl.dll";
+                    string platform = Environment.Is64BitProcess ? "x64" : "x86";
 
-                foreach (var filePath in new[]
-                                         {
+                    string foundFilePath = null;
+
+                    foreach (var filePath in new[]
+                                     {
                                          Path.Combine(folder, fileName),
                                          Path.Combine(folder, platform, fileName),
                                          Path.Combine(folder, "runtimes", "win-" + platform, "native", fileName)
                                      })
-                {
-                    if (File.Exists(filePath))
                     {
-                        LoadInstanceFrom(filePath);
+                        if (File.Exists(filePath))
+                        {
+                            foundFilePath = filePath;
+
+                        }
+                    }
+
+                    if (foundFilePath != null)
+                    {
+                        instance = loadInstanceFrom(foundFilePath);
+                    }
+                    else
+                    {
+                        throw new FileNotFoundException($"The {fileName} could not be located.");
                     }
                 }
             }
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void LoadInstanceFrom(string filePath)
         {
+            lock (lockObject)
+            {
+                if (instance == null)
+                {
+                    instance = loadInstanceFrom(filePath);
+                }
+            }
+        }
+
+        private static TexHelper loadInstanceFrom(string filePath)
+        {
             AssemblyLoadContext loadContext = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly()) ?? AssemblyLoadContext.Default;
-            Instance = (TexHelper)Activator.CreateInstance(loadContext.LoadFromAssemblyPath(filePath).GetType("DirectXTexNet.TexHelperImpl"));
+            return (TexHelper)Activator.CreateInstance(loadContext.LoadFromAssemblyPath(filePath).GetType("DirectXTexNet.TexHelperImpl"));
         }
 
         public readonly Size_t IndexOutOfRange = unchecked((Size_t)(Environment.Is64BitProcess ? UInt64.MaxValue : UInt32.MaxValue));
-
-        //internal DirectXTexNet() { }
 
         public abstract void SetOmpMaxThreadCount(int maxThreadCount);
 
