@@ -6,9 +6,9 @@
     <Product>DirectXTexNet</Product>
     <Description>.NET wrapper for DirectXTex</Description>
     <Copyright>Copyright © 2024 Dennis Gocke</Copyright>
-    <Version>1.0.6</Version>
-    <AssemblyVersion>1.0.6.0</AssemblyVersion>
-    <FileVersion>1.0.6.0</FileVersion>
+    <Version>1.0.7</Version>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
+    <FileVersion>1.0.7.0</FileVersion>
     <DocumentationFile>..\bin\$(Configuration)\DirectXTexNet.XML</DocumentationFile>
     <OutputPath>..\bin\$(Configuration)\</OutputPath>
     <NoWarn>1591</NoWarn>
