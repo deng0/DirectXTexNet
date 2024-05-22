@@ -143,6 +143,10 @@ namespace DirectXTexNet
         P208 = 130,
         V208 = 131,
         V408 = 132,
+
+
+        SAMPLER_FEEDBACK_MIN_MIP_OPAQUE = 189,
+        SAMPLER_FEEDBACK_MIP_REGION_USED_OPAQUE = 190,
         //FORCE_UINT = 0xffffffff
     }
 
@@ -241,6 +245,10 @@ namespace DirectXTexNet
         /// Override with a legacy 8 bits-per-pixel format size
         /// </summary>
         BPP8 = 0x40000,
+        /// <summary>
+        /// Don't allow pixel allocations in excess of 4GB (always true for 32-bit)
+        /// </summary>
+        LIMIT_4GB = 0x10000000,
     }
 
     public enum TEX_DIMENSION
@@ -318,6 +326,11 @@ namespace DirectXTexNet
         BAD_DXTN_TAILS = 0x40,
 
         /// <summary>
+        /// Allow some file variants due to common bugs in the header written by various leagcy DDS writers
+        /// </summary>
+        PERMISSIVE = 0x80,
+
+        /// <summary>
         /// Always use the 'DX10' header extension for DDS writer (i.e. don't try to write DX9 compatible DDS files)
         /// </summary>
         FORCE_DX10_EXT = 0x10000,
@@ -331,6 +344,11 @@ namespace DirectXTexNet
         /// Force use of legacy header for DDS writer (will fail if unable to write as such)
         /// </summary>
         FORCE_DX9_LEGACY = 0x40000,
+
+        /// <summary>
+        /// Force use of 'RXGB' instead of 'DXT5' for DDS write of BC3_UNORM data
+        /// </summary>
+        ORCE_DXT5_RXGB = 0x80000,
 
         /// <summary>
         /// Enables the loader to read large dimension .dds files (i.e. greater than known hardware requirements)
@@ -474,20 +492,26 @@ namespace DirectXTexNet
         FLOAT_X2BIAS = 0x200,
 
         /// <summary>
-        /// When converting RGB to R, defaults to using grayscale. These flags indicate copying a specific channel instead
-        /// When converting RGB to RG, defaults to copying RED | GREEN. These flags control which channels are selected instead.
+        /// When converting RGB(A) to R, defaults to using grayscale. These flags indicate copying a specific channel instead
+        /// When converting RGB(A) to RG, defaults to copying RED | GREEN. These flags control which channels are selected instead.
         /// </summary>
         RGB_COPY_RED = 0x1000,
         /// <summary>
-        /// When converting RGB to R, defaults to using grayscale. These flags indicate copying a specific channel instead
-        /// When converting RGB to RG, defaults to copying RED | GREEN. These flags control which channels are selected instead.
+        /// When converting RGB(A) to R, defaults to using grayscale. These flags indicate copying a specific channel instead
+        /// When converting RGB(A) to RG, defaults to copying RED | GREEN. These flags control which channels are selected instead.
         /// </summary>
         RGB_COPY_GREEN = 0x2000,
         /// <summary>
-        /// When converting RGB to R, defaults to using grayscale. These flags indicate copying a specific channel instead
-        /// When converting RGB to RG, defaults to copying RED | GREEN. These flags control which channels are selected instead.
+        /// When converting RGB(A) to R, defaults to using grayscale. These flags indicate copying a specific channel instead
+        /// When converting RGB(A) to RG, defaults to copying RED | GREEN. These flags control which channels are selected instead.
         /// </summary>
         RGB_COPY_BLUE = 0x4000,
+
+        /// <summary>
+        /// When converting RGB(A) to R, defaults to using grayscale. These flags indicate copying a specific channel instead
+        /// When converting RGB(A) to RG, defaults to copying RED | GREEN. These flags control which channels are selected instead.
+        /// </summary>
+        RGB_COPY_ALPHA = 0x8000,
 
         /// <summary>
         /// Use ordered 4x4 dithering for any required conversions
@@ -732,7 +756,19 @@ namespace DirectXTexNet
         /// <summary>
         /// Windows Icon (.ico)
         /// </summary>
-        ICO
+        ICO,
+
+        /// <summary>
+        /// High Efficiency Image File (.heif, .heic)
+        /// </summary>
+        HEIF
+    }
+
+    public enum CREATETEX_FLAGS
+    {
+        DEFAULT = 0,
+        FORCE_SRGB = 0x1,
+        IGNORE_SRGB = 0x2,
     }
     #endregion
 
@@ -1140,7 +1176,7 @@ namespace DirectXTexNet
             D3D11_BIND_FLAG bindFlags,
             D3D11_CPU_ACCESS_FLAG cpuAccessFlags,
             D3D11_RESOURCE_MISC_FLAG miscFlags,
-            bool forceSRGB);
+            CREATETEX_FLAGS createTexFlags);
 
         public abstract ID3D11ShaderResourceViewPtr CreateShaderResourceViewEx(
             ID3D11DevicePtr pDevice,
@@ -1148,7 +1184,7 @@ namespace DirectXTexNet
             D3D11_BIND_FLAG bindFlags,
             D3D11_CPU_ACCESS_FLAG cpuAccessFlags,
             D3D11_RESOURCE_MISC_FLAG miscFlags,
-            bool forceSRGB);
+            CREATETEX_FLAGS createTexFlags);
         #endregion
 
         public virtual void Dispose()
@@ -1252,6 +1288,8 @@ namespace DirectXTexNet
 
         public abstract bool IsSRGB(DXGI_FORMAT fmt);
 
+        public abstract bool IsBGR(DXGI_FORMAT fmt);
+
         public abstract bool IsTypeless(DXGI_FORMAT fmt, bool partialTypeless);
 
         public abstract bool HasAlpha(DXGI_FORMAT fmt);
@@ -1284,6 +1322,8 @@ namespace DirectXTexNet
         public abstract Size_t ComputeImageIndex(TexMetadata metadata, Size_t mip, Size_t item, Size_t slice);
 
         public abstract DXGI_FORMAT MakeSRGB(DXGI_FORMAT fmt);
+
+        public abstract DXGI_FORMAT MakeLinear(DXGI_FORMAT fmt);
 
         public abstract DXGI_FORMAT MakeTypeless(DXGI_FORMAT fmt);
 

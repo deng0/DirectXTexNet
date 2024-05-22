@@ -55,6 +55,10 @@ namespace DirectXTexNet
 	{
 		return DirectX::IsSRGB(static_cast<::DXGI_FORMAT>(fmt));
 	}
+	bool TexHelperImpl::IsBGR(DXGI_FORMAT fmt)
+	{
+		return DirectX::IsBGR(static_cast<::DXGI_FORMAT>(fmt));
+	}
 	bool TexHelperImpl::IsTypeless(DXGI_FORMAT fmt, bool partialTypeless)
 	{
 		return DirectX::IsTypeless(static_cast<::DXGI_FORMAT>(fmt), partialTypeless);
@@ -92,6 +96,10 @@ namespace DirectXTexNet
 	DXGI_FORMAT TexHelperImpl::MakeSRGB(DXGI_FORMAT fmt)
 	{
 		return static_cast<DXGI_FORMAT>(DirectX::MakeSRGB(static_cast<::DXGI_FORMAT>(fmt)));
+	}
+	DXGI_FORMAT TexHelperImpl::MakeLinear(DXGI_FORMAT fmt)
+	{
+		return static_cast<DXGI_FORMAT>(DirectX::MakeLinear(static_cast<::DXGI_FORMAT>(fmt)));
 	}
 	DXGI_FORMAT TexHelperImpl::MakeTypeless(DXGI_FORMAT fmt)
 	{
@@ -1285,7 +1293,7 @@ namespace DirectXTexNet
 
 		return ID3D11ResourcePtr(IntPtr(texture));
 	}
-	ID3D11ResourcePtr ScratchImageImpl::CreateTextureEx(ID3D11DevicePtr pDevice, D3D11_USAGE usage, D3D11_BIND_FLAG bindFlags, D3D11_CPU_ACCESS_FLAG cpuAccessFlags, D3D11_RESOURCE_MISC_FLAG miscFlags, bool forceSRGB)
+	ID3D11ResourcePtr ScratchImageImpl::CreateTextureEx(ID3D11DevicePtr pDevice, D3D11_USAGE usage, D3D11_BIND_FLAG bindFlags, D3D11_CPU_ACCESS_FLAG cpuAccessFlags, D3D11_RESOURCE_MISC_FLAG miscFlags, CREATETEX_FLAGS createTexFlags)
 	{
 		auto deviceRaw = static_cast<ID3D11Device*>(pDevice.ToPointer());
 
@@ -1299,7 +1307,7 @@ namespace DirectXTexNet
 			static_cast<::D3D11_BIND_FLAG>(bindFlags),
 			static_cast<::D3D11_CPU_ACCESS_FLAG>(cpuAccessFlags),
 			static_cast<::D3D11_RESOURCE_MISC_FLAG>(miscFlags),
-			forceSRGB,
+			static_cast<DirectX::CREATETEX_FLAGS>(createTexFlags),
 			&texture);
 
 		Marshal::ThrowExceptionForHR(hr);
@@ -1322,7 +1330,7 @@ namespace DirectXTexNet
 
 		return ID3D11ShaderResourceViewPtr(IntPtr(texture));
 	}
-	ID3D11ShaderResourceViewPtr ScratchImageImpl::CreateShaderResourceViewEx(ID3D11DevicePtr pDevice, D3D11_USAGE usage, D3D11_BIND_FLAG bindFlags, D3D11_CPU_ACCESS_FLAG cpuAccessFlags, D3D11_RESOURCE_MISC_FLAG miscFlags, bool forceSRGB)
+	ID3D11ShaderResourceViewPtr ScratchImageImpl::CreateShaderResourceViewEx(ID3D11DevicePtr pDevice, D3D11_USAGE usage, D3D11_BIND_FLAG bindFlags, D3D11_CPU_ACCESS_FLAG cpuAccessFlags, D3D11_RESOURCE_MISC_FLAG miscFlags, CREATETEX_FLAGS createTexFlags)
 	{
 		auto deviceRaw = static_cast<ID3D11Device*>(pDevice.ToPointer());
 
@@ -1336,7 +1344,7 @@ namespace DirectXTexNet
 			static_cast<::D3D11_BIND_FLAG>(bindFlags),
 			static_cast<::D3D11_CPU_ACCESS_FLAG>(cpuAccessFlags),
 			static_cast<::D3D11_RESOURCE_MISC_FLAG>(miscFlags),
-			forceSRGB,
+			static_cast<DirectX::CREATETEX_FLAGS>(createTexFlags),
 			&texture);
 
 		Marshal::ThrowExceptionForHR(hr);
